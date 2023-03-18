@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Project: BeSocial
 
 Phase 1 Due: 8:00 PM, Apr. 5, 2023  
@@ -411,3 +412,7 @@ Programs that fail to compile or run or connect to the database server earn zero
 points.
 
 
+=======
+# BeSocial
+CS1555 Course Project
+>>>>>>> 6d17255 (Initial commit)
