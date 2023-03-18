@@ -1,5 +1,3 @@
-## CS 1555/2055 – Database Management Systems (Spring 2023)
-
 # Project: BeSocial
 
 Release Date: Mar. 18, 2023 Team Formation Due: 8:00 PM, Mar. 3, 2023
