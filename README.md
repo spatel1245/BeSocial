@@ -1,15 +1,12 @@
 ## CS 1555/2055 – Database Management Systems (Spring 2023)
 
-```
-Dept. of Computer Science, University of Pittsburgh
-```
 # Project: BeSocial
 
 Release Date: Mar. 18, 2023 Team Formation Due: 8:00 PM, Mar. 3, 2023
 Phase 1 Due: 8:00 PM, Apr. 5, 2023 Project Demos: Apr. 27 & 28, 2023
 Phase 2 Due: 8:00 PM, Apr. 19, 2023
 
-Purpose of the project
+## Purpose of the project
 
 The primary goal of this project is to implement a single Java application program that will
 operateBeSocial, a Social Networking System for the University of Pittsburgh. The core of such
@@ -23,7 +20,7 @@ opment and contribute equally. Division of labor to data engineering (db compone
 engineering (java component) is not acceptable since each member of the team will be evaluated on
 both components.
 
-Phase 1: The BeSocial database schema and example data
+## Phase 1: The BeSocial database schema and example data
 Due: 8:00 PM, Apr. 5, 2023
 
 Your BeSocial database includes the standard basic information found in a social networking
@@ -33,6 +30,7 @@ both structural and semantic integrity constraints, you must state your assumpti
 your database creation script. Any semantic integrity constraints involving multiple relations should
 be specified using triggers in this phaseYou should not change table and attribute names.
 
+```
 - user(userID, name, email, password, dateofbirth, lastlogin)
     Stores the user and login information for each user registered in the system.
     Datatype
@@ -42,17 +40,17 @@ be specified using triggers in this phaseYou should not change table and attribu
        password: varchar(50)
        dateofbirth: date
        lastlogin: timestamp
+```
+```
 - friend(userID1, userID2, JDate, requestText)
     Stores the friends lists for every user in the system. The JDate is when they became friends,
     and the requestText is the text from the original friend request.
-
-
+    Datatype
+        userID1: integer
+        userID1: integer
+        JDate: date
+        requestText: varchar(200)
 ```
-Datatype
-userID1: integer
-userID1: integer
-JDate: date
-requestText: varchar(200)
 ```
 - pendingFriend(fromID, toID, requestText)
     Stores pending friends requests that have yet to be confirmed by the recipient of the request.
@@ -60,6 +58,8 @@ requestText: varchar(200)
        fromID: integer
        toID: integer
        requestText: varchar(200)
+```
+```
 - groupInfo(gID, name, size, description)
     Stores information for each group in the system.
     Datatype
@@ -67,6 +67,8 @@ requestText: varchar(200)
        name: varchar(50)
        size: integer
        description: varchar(200)
+```
+```
 - groupMember(gID, userID, role, lastConfirmed)
     Stores the users who are members of each group in the system. The “role” indicates whether
     a user is a manager of a group (who can accept joining group requests) or a member.
@@ -77,6 +79,8 @@ requestText: varchar(200)
        userID: integer
        role: varchar(20)
        lastConfirmed: timestamp
+```
+```
 - pendingGroupMember(gID, userID, requestText, requestTime)
     Stores pending joining group requests that have yet to be accepted/rejected by the manager of
     the group. The requestTime is the time when the user requested group membership.
@@ -85,28 +89,27 @@ requestText: varchar(200)
        userID: integer
        requestText: varchar(200)
        requestTime: timestamp
+```
+```
 - message(msgID, fromID, messageBody, toUserID, toGroupID, timeSent)
     Stores every message sent by users in the system. Note that the default values of toUserID
     and toGroupID should be NULL.
-
-
+    Datatype
+        msgID: integer
+        fromID: integer
+        messageBody: varchar(200)
+        toUserID: integer
+        toGroupID: integer
+        timeSent: timestamp
 ```
-Datatype
-msgID: integer
-fromID: integer
-messageBody: varchar(200)
-toUserID: integer
-toGroupID: integer
-timeSent: timestamp
 ```
 - messageRecipient(msgID, userID)
     Stores the recipients of each message stored in the system.
     Datatype
        msgID: integer
        userID: integer
-
-To facilitate time travel, you are expected to implement aClock. You must maintain a “pseudo”
-timestamp (not the real system timestamp) in the auxilliary tableClock. The reason for making such
+```
+To facilitate time travel, you are expected to implement a Clock. You must maintain a “pseudo” timestamp (not the real system timestamp) in the auxilliary tableClock. The reason for making such
 a timestamp and not using the system one is to make it easy to generate scenarios (time traveling)
 to debug and test your project. Clockhas only one tuple, inserted as part of initialization and
 is updated during time traveling. That is, all functions on theClockrelation will be done on the
@@ -129,7 +132,7 @@ Once you have created a schema and integrity constraints for storing all of this
 should generate sample data to insert into your tables. Generate the data to represent at least 100
 users, 200 friendships, 10 groups, and 300 messages.
 
-Phase 2: A JDBC application to manage BeSocial
+## Phase 2: A JDBC application to manage BeSocial
 Due: 8:00 PM, Apr. 19, 2023
 
 The objective of this phase of the project is to familiarize yourself with all the powerful features
@@ -138,8 +141,6 @@ database approaches using triggers, stored procedures and functions. You will lo
 implement them using Java approaches.
 Attention must be paid in defining transactions appropriately. Specifically, you need to design
 theSQL transactionsappropriately and when necessary, use the concurrency control mechanism
-
-
 supported by PostgreSQL (e.g., isolation level, locking models) to make sure that inconsistent states
 will not occur. Assume that multiple requests for changes of BeSocial can be made on behalf of
 multiple different users concurrently. For example, it could happen when a group manager A is
@@ -194,7 +195,6 @@ ingFriend relation.
 In the event that the user has no pending friend requests, a message “No Pending Friend
 Requests” should be displayed to the user.
 ```
-
 ```
 6.createGroup
 Given a name, description, and membership limit (i.e., size), add a new group to the system,
@@ -234,12 +234,14 @@ timestamp.
 In the event that the user is not a member of the specified group, a message “Not a Member
 of any Groups” should be displayed to the user.
 ```
+```
 10.searchForUser
 Given a string on which to match any user in the system, any item in this string must be
 matched against the “name” and “email” fields of a user’s profile. That is if the user searches
 for “xyz abc”, the results should be the set of all users that have “xyz” in their “name” or
 “email” union the set of all users that have “abc” in their “name” or “email”.
-
+```
+```
 11.sendMessageToUser
 With this the user can send a message to one friend given the friend’s userID. The application
 should display the name of the recipient and the user should be prompted to enter the body
@@ -248,8 +250,8 @@ message to the receiving user by adding an appropriate entry into themessagerela
 should be auto-generated and timeSent should be set to the current time of theClocktable)
 anduse a triggerto add a corresponding entry into themessageRecipientrelation. The user
 should lastly be shown success or failure feedback.
-
-
+```
+```
 12.sendMessageToGroup
 With this the user can send a message to a recipient group given the group ID, if the user is
 within the group. Every member of this group should receive the message. The user should be
@@ -263,16 +265,19 @@ to ToUserID in the table ofmessage. If the user wants to send a message to a gro
 to put the group ID to ToGroupID in the table ofmessageanduse a triggerto populate
 themessageRecipient table with proper user ID information as defined by thegroupMember
 relation.
-
+```
+```
 13.displayMessages
 When the user selects this option, the entire contents of every message sent to the user (in-
 cluding group messages) should be displayed in a nicely formatted way.
-
+```
+```
 14.displayNewMessages
 This should display messages in the same fashion as the previous task except that only those
 messages sent since the last time the user logged into the system should be displayed (including
 group messages).
-
+```
+```
 15.displayFriends
 This task supports the browsing of the logged-in user’s friends’ profiles. It first displays each
 of the user’s friends’ names and userIDs. Then it allows the user to either retrieve a friend’s
@@ -280,21 +285,20 @@ entire profile by entering the appropriate userID or exit browsing and return to
 by entering 0 as a userID. When selected, a friend’s profile should be displayed in a nicely
 formatted way, after which the user should be prompted to either select to retrieve another
 friend’s profile or return to the main menu.
-
-16.rankGroups
-
 ```
+```
+16.rankGroups
 This task should produce a ranked list of groups based on their number of members.
 In the event that there are no groups in the system, a message “No Groups to Rank” should
 be displayed to the user.
 ```
-17.rankUsers
-
 ```
+17.rankUsers
 This task should produce a ranked list of users based on the number of friends they have along
 with their number of friends.
 Note the number of friends of a user includes those who are members of the groups user belongs
 to.
+```
 ```
 18.topMessages
 Display the top k users with respect to the number of messages sent to the logged-in user plus
@@ -302,8 +306,7 @@ the number of messages received from the logged-in user in the past x months. x 
 input parameters to this function. 1 month is defined as 30 days counting back starting from
 the current date of the Clocktable. Group messages do not need to be considered in this
 function.
-
-
+```
 ```
 19.threeDegrees
 Given a userID, find a path, if one exists, between the logged-in user and that user with at
@@ -333,9 +336,9 @@ in BeSocial.java that take in valid input arguments and interact with the DBMS d
 involving manual user inputs, so that your functions in BeSocial.java can call those helper functions
 and Driver.java can also call those helper functions for testing purposes.
 
-Project Submission
+# Project Submission
 
-Phase 1 The first phase should contain SQL components for the SQL DDL, triggers, and INSERT
+## Phase 1 The first phase should contain SQL components for the SQL DDL, triggers, and INSERT
 statements of the project. In addition you may submit any SQL queries for which you wish to receive
 feedback. Specifically,
 
@@ -348,7 +351,7 @@ Note that after the first phase submission, you should continue working on your 
 waiting for our feedback. Furthermore, you should feel free to correct and enhance your SQL part
 with new views, functions, procedures etc.
 
-Phase 2 The second phase should contain, in addition to the SQL part, the Java code. Specifically,
+## Phase 2 The second phase should contain, in addition to the SQL part, the Java code. Specifically,
 
 - schema2.sql the script to create the enhanced database schema with integrity
     constraint evaluation modes.
@@ -369,7 +372,7 @@ at the beginning of the project, you need to do two things:
 2. Give full permission of the project repository to your TAs (GitHub ID: ralseghayer, GitHub
     ID: anushrihv, GitHub ID: nixonb91).
 
-To turn in your code, you must do three things by each deadline:
+## To turn in your code, you must do three things by each deadline:
 
 1. Make a commit to your project repository that represents what should be graded as your group’s
     submission for that phase. The message for this commit should be “Phase X submission” where
@@ -402,7 +405,7 @@ Multiple submissions are allowed for each phase for each team. The last submissi
 responding deadline will be graded.NO late submission is allowed.
 
 
-Grading
+# Grading
 
 The project will be graded on correctness (e.g. coping with violation of integrity constraints),
 robustness (e.g. coping with failed transactions) and readability. You will not be graded on efficient
@@ -410,14 +413,4 @@ code with respect to speed although bad programming will certainly lead to incor
 Programs that fail to compile or run or connect to the database server earn zero andno partial
 points.
 
-Academic Honesty
-
-The work in this assignment is to be doneindependentlyby each team. Discussions with other
-students or teams on the project should be limited to understanding the statement of the problem.
-Cheating in any way, including giving your work to someone else will result in an F for the course
-and a report to the appropriate University authority.
-
-```
-Enjoy your class project!
-```
 
