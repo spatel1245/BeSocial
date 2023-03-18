@@ -7,11 +7,10 @@ Phase 2 Due: 8:00 PM, Apr. 19, 2023
 ## Purpose of the project
 
 The primary goal of this project is to implement a single Java application program that will
-operateBeSocial, a Social Networking System for the University of Pittsburgh. The core of such
+operate BeSocial, a Social Networking System for the University of Pittsburgh. The core of such
 a system is a database system. The secondary goal is to learn how to work as a member of a team
 which designs and develops a relatively large, real database application.
-You must implement your application program using Java, PostgreSQL, and JDBC. The assign-
-ment focuses on the database component and not on the user interface (UI). Hence, NO HTML or
+You must implement your application program using Java, PostgreSQL, and JDBC. The assignment focuses on the database component and not on the user interface (UI). Hence, NO HTML or
 other graphical user interface is required for this project and carry no bonus points.
 It is expected that all members of a team will be involved in all aspects of the project devel-
 opment and contribute equally. Division of labor to data engineering (db component) and software
