@@ -1,4 +1,5 @@
 # BeSocial
+## Shiv Patel, Andres Trujillo, Ben Zarom
 
 Release Date: Mar. 18, 2023 Team Formation Due: 8:00 PM, Mar. 3, 2023
 Phase 1 Due: 8:00 PM, Apr. 5, 2023 Project Demos: Apr. 27 & 28, 2023
