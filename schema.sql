@@ -1,0 +1,42 @@
+DROP TABLE IF EXISTS "USER" CASCADE;
+CREATE TABLE "USER"
+(
+    userID INTEGER NOT NULL,
+    name VARCHAR(50),
+    email VARCHAR(50),
+    password VARCHAR(50),
+    date_of_birth DATE,
+    lastlogin TIMESTAMP
+);
+
+CREATE TABLE FRIEND
+(
+    userID1 INTEGER NOT NULL,
+    userID2 INTEGER NOT NULL,
+    JDate DATE,
+    requestText VARCHAR(200)
+);
+
+CREATE TABLE PENDINGFRIEND
+(
+    userID1 INTEGER NOT NULL,
+    userID2 INTEGER NOT NULL,
+    requestText VARCHAR(200)
+);
+
+CREATE TABLE GROUPINFO
+(
+    gID INTEGER NOT NULL,
+    name VARCHAR(50),
+    size INTEGER,
+    description VARCHAR(200)
+);
+
+CREATE TABLE GROUPMEMBER
+(
+    gID INTEGER NOT NULL,
+    userID1 INTEGER NOT NULL,
+    role VARCHAR(20),
+    lastConfirmed TIMESTAMP
+);
+
