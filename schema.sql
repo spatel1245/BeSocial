@@ -62,3 +62,9 @@ CREATE TABLE messageRecipient
     msgID INTEGER NOT NULL,
     userID INTEGER NOT NULL
 );
+
+CREATE TABLE clock
+(
+    pseudo_time TIMESTAMP,
+    CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
+)
