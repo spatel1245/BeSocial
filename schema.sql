@@ -1,15 +1,14 @@
-DROP TABLE IF EXISTS "USER" CASCADE;
-CREATE TABLE "USER"
+CREATE TABLE "user"
 (
     userID INTEGER NOT NULL,
     name VARCHAR(50),
     email VARCHAR(50),
     password VARCHAR(50),
     date_of_birth DATE,
-    lastlogin TIMESTAMP
+    lastLogin TIMESTAMP
 );
 
-CREATE TABLE FRIEND
+CREATE TABLE friend
 (
     userID1 INTEGER NOT NULL,
     userID2 INTEGER NOT NULL,
@@ -17,14 +16,14 @@ CREATE TABLE FRIEND
     requestText VARCHAR(200)
 );
 
-CREATE TABLE PENDINGFRIEND
+CREATE TABLE pendingFriend
 (
     userID1 INTEGER NOT NULL,
     userID2 INTEGER NOT NULL,
     requestText VARCHAR(200)
 );
 
-CREATE TABLE GROUPINFO
+CREATE TABLE groupInfo
 (
     gID INTEGER NOT NULL,
     name VARCHAR(50),
@@ -32,7 +31,7 @@ CREATE TABLE GROUPINFO
     description VARCHAR(200)
 );
 
-CREATE TABLE GROUPMEMBER
+CREATE TABLE groupMember
 (
     gID INTEGER NOT NULL,
     userID1 INTEGER NOT NULL,
@@ -40,10 +39,32 @@ CREATE TABLE GROUPMEMBER
     lastConfirmed TIMESTAMP
 );
 
-CREATE TABLE PENDINGGROUPMEMBER
+CREATE TABLE pendingGroupMember
 (
     gID INTEGER NOT NULL,
     userID INTEGER NOT NULL,
     requestText VARCHAR(200),
     requestTime TIMESTAMP
 );
+
+CREATE TABLE message
+(
+    msgID INTEGER NOT NULL,
+    fromID INTEGER NOT NULL,
+    messageBody VARCHAR(200),
+    toUserID INTEGER NOT NULL,
+    toGroupID INTEGER,
+    timeSent TIMESTAMP NOT NULL
+);
+
+CREATE TABLE messageRecipient
+(
+    msgID INTEGER NOT NULL,
+    userID INTEGER NOT NULL
+);
+
+CREATE TABLE clock
+(
+    pseudo_time TIMESTAMP,
+    CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
+)
