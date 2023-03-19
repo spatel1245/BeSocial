@@ -47,4 +47,3 @@ CREATE TABLE PENDINGGROUPMEMBER
     requestText VARCHAR(200),
     requestTime TIMESTAMP
 );
-
