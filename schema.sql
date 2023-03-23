@@ -1,4 +1,4 @@
-CREATE TABLE "user"
+CREATE TABLE profile
 (
     userID INTEGER NOT NULL,
     name VARCHAR(50),

@@ -3,7 +3,7 @@ Shiv Patel, Andres Trujillo, Ben Zarom
 
 Phase 1 Due: 8:00 PM, Apr. 5, 2023  
 Project Demos: Apr. 27 & 28, 2023  
-Phase 2 Due: 8:00 PM, Apr. 19, 2023  
+Phase 2 Due: 8:00 PM, Apr. 19, 2023
 
 ## Purpose of the project
 
