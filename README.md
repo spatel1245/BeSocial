@@ -1,5 +1,5 @@
 # BeSocial
-Shiv Patel, Andres Trujillo, Ben Zarom
+Shiv Patel, Ben Zarom, Andres Trujillo
 
 Phase 1 Due: 8:00 PM, Apr. 5, 2023  
 Project Demos: Apr. 27 & 28, 2023  
@@ -106,6 +106,7 @@ be specified using triggers in this phaseYou should not change table and attribu
     Datatype
        msgID: integer
        userID: integer
+     
 ```
 To facilitate time travel, you are expected to implement a Clock. You must maintain a “pseudo” timestamp (not the real system timestamp) in the auxilliary tableClock. The reason for making such
 a timestamp and not using the system one is to make it easy to generate scenarios (time traveling)
