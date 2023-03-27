@@ -81,6 +81,10 @@ CREATE TABLE messageRecipient
 (
     msgID INTEGER NOT NULL,
     userID INTEGER NOT NULL
+    CONSTRAINT PRIMARY KEY PK_messageRecipient (msgId, userID)
+    CONSTRAINT FK_messageRecipient FOREIGN KEY msgID REFERENCES message(msgID)
+    CONSTRAINT FK_messageRecipient FOREIGN KEY UserID REFERENCES profile(UserID)
+
 );
 
 CREATE TABLE clock
