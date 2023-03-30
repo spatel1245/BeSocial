@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS profile CASCADE;
+DROP TABLE IF EXISTS user CASCADE;
 DROP TABLE IF EXISTS friend CASCADE;
 DROP TABLE IF EXISTS pendingFriend CASCADE;
 DROP TABLE IF EXISTS groupInfo CASCADE;
@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS messageRecipient CASCADE;
 
 
 
-CREATE TABLE profile
+CREATE TABLE user
 (
     userID INTEGER NOT NULL,
     name VARCHAR(50),
@@ -19,7 +19,7 @@ CREATE TABLE profile
     date_of_birth DATE,
     lastLogin TIMESTAMP,
 
-    CONSTRAINT PK_PROFILE
+    CONSTRAINT PK_USER
     PRIMARY KEY (userID)
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE groupMember
     role VARCHAR(20),
     lastConfirmed TIMESTAMP,
     CONSTRAINT PK_groupMember PRIMARY KEY (gID, userID1),
-    CONSTRAINT FK_GroupMember FOREIGN KEY (userID1) REFERENCES PROFILE(UserID),
+    CONSTRAINT FK_GroupMember FOREIGN KEY (userID1) REFERENCES USER(UserID),
     CONSTRAINT FK_GroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID)
 
 );
@@ -74,7 +74,7 @@ CREATE TABLE pendingGroupMember
     requestTime TIMESTAMP,
 
 CONSTRAINT PK_pendingGroupMember PRIMARY KEY (gID, UserID),
-CONSTRAINT FK_pendingGroupMember FOREIGN KEY (userID) REFERENCES PROFILE(UserID),
+CONSTRAINT FK_pendingGroupMember FOREIGN KEY (userID) REFERENCES USER(UserID),
 CONSTRAINT FK_pendingGroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID)
 );
 
@@ -99,7 +99,7 @@ CREATE TABLE messageRecipient
 
     CONSTRAINT PK_messageRecipient PRIMARY KEY  (msgId, userID),
     CONSTRAINT FK_messageRecipient FOREIGN KEY (msgID) REFERENCES message(msgID),
-    CONSTRAINT FK_messageRecipient1 FOREIGN KEY (userID) REFERENCES profile(userID)
+    CONSTRAINT FK_messageRecipient1 FOREIGN KEY (userID) REFERENCES USER(userID)
 
 );
 
