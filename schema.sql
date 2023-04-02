@@ -107,3 +107,26 @@ CREATE TABLE clock
     pseudo_time TIMESTAMP,
     CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
 );
+
+
+-- ******************** SAMPLE DATA ******************** --
+
+--*** 100 users *** --
+
+INSERT INTO profile values(0, 'Andres', 'aet44@pitt.edu', 'password0', '2002-01-30', now()); --delete from profile where userId = 0;
+INSERT INTO profile values(1, 'Shiv', 'shivpatel@pitt.edu', 'password0', '2002-08-01', now());
+select * from profile;
+
+--*** 200 friendships *** --
+INSERT INTO friend values(0, 1, '08-12-2020', 'Hi, I found we both live in Tower A and are CS students, would like to talk to you more!');
+select * from friend;
+
+--*** 10 groups *** --
+INSERT INTO groupInfo values(0, 'pittSCI', 3000, 'All students and staff at Pitt School of Computing and Information');
+select * from groupInfo;
+
+--*** 300 messages *** --
+INSERT INTO message values(0, 0, 'Hey!', 1, 0 ,now());
+select * from message;
+
+
