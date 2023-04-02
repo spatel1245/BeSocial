@@ -97,7 +97,7 @@ CREATE TABLE messageRecipient
 
     CONSTRAINT PK_messageRecipient PRIMARY KEY  (msgId, userID), -- Both the msgID and userID are the primary key as in order to uniquely identify who the recipient of a message is, we must know the user (identified by userID) and the message they receive (messageID)
     CONSTRAINT FK_messageRecipient FOREIGN KEY (msgID) REFERENCES message(msgID), -- this reference allows for access of the message's attributes.
-    CONSTRAINT FK_messageRecipient1 FOREIGN KEY (userID) REFERENCES USER(userID) --this reference allows for access of the recipient's (user) attributes.
+    CONSTRAINT FK_messageRecipient1 FOREIGN KEY (userID) REFERENCES PROFILE(userID) --this reference allows for access of the recipient's (user) attributes.
 
 );
 
