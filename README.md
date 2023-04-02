@@ -111,7 +111,7 @@ be specified using triggers in this phaseYou should not change table and attribu
 To facilitate time travel, you are expected to implement a Clock. You must maintain a “pseudo” timestamp (not the real system timestamp) in the auxilliary tableClock. The reason for making such
 a timestamp and not using the system one is to make it easy to generate scenarios (time traveling)
 to debug and test your project. Clockhas only one tuple, inserted as part of initialization and
-is updated during time traveling. That is, all functions on theClockrelation will be done on the
+is updated during time traveling. That is, all functions on the Clock relation will be done on the
 database side and not through JDBC. The schema of this relation is the following.
 
 - CLOCK ( pseudotime )
@@ -122,10 +122,10 @@ Recall that triggers can be used to make your code more efficient besides enforc
 constraints. In this first phase,you are expected to write and submit at least two triggers.
 Some examples of triggers as discussed in Phase 2 could be:
 
-- addMessageRecipient which adds a corresponding entry into themessageRecipient relation
-    upon adding a new message to themessagerelation
-- updateGroupwhich moves a pending accepted request in thependingGroupMemberrelation to
-    thegroupMemberrelation when a member leaves the group.
+- addMessageRecipient which adds a corresponding entry into the messageRecipient relation
+    upon adding a new message to the message relation
+- updateGroupwhich moves a pending accepted request in the pendingGroupMember relation to
+    the groupMember relation when a member leaves the group.
 
 Once you have created a schema and integrity constraints for storing all of this information, you
 should generate sample data to insert into your tables. Generate the data to represent at least 100
