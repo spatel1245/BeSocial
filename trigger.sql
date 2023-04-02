@@ -4,3 +4,5 @@ Create TRIGGER addMessageRecipient
     BEGIN
         INSERT INTO messageReciepient(123,123)
     END;
+
+
