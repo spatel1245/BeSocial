@@ -13,8 +13,6 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
  FOR EACH ROW
  EXECUTE FUNCTION add_message_recipient();
 
-
-
 CREATE OR REPLACE FUNCTION delete_pending_friendRequest()
 RETURNS TRIGGER
  AS $$
