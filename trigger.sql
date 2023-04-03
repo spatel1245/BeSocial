@@ -1,11 +1,3 @@
-CREATE OR REPLACE FUNCTION add_message_recipient()
- RETURNS TRIGGER
- AS $$
- BEGIN
-     INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.toUserID); --might need changed
-     RETURN NEW;
- END;
- $$ LANGUAGE plpgsql;
 
  DROP TRIGGER if EXISTS add_message_recipient on message;
  CREATE TRIGGER add_message_recipient
