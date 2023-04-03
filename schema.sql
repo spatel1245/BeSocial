@@ -58,11 +58,11 @@ CREATE TABLE groupInfo
 CREATE TABLE groupMember
 (
     gID INTEGER NOT NULL,
-    userID1 INTEGER NOT NULL,
+    userID INTEGER NOT NULL,
     role VARCHAR(20),
     lastConfirmed TIMESTAMP,
-    CONSTRAINT PK_groupMember PRIMARY KEY (gID, userID1),-- gID and userID(1) are the primary key for this relation as a groupMember is a user(profile) that belongs to a group. Both are necessary to uniquely identify the group member.
-    CONSTRAINT FK_GroupMember FOREIGN KEY (userID1) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
+    CONSTRAINT PK_groupMember PRIMARY KEY (gID, userID),-- gID and userID(1) are the primary key for this relation as a groupMember is a user(profile) that belongs to a group. Both are necessary to uniquely identify the group member.
+    CONSTRAINT FK_GroupMember FOREIGN KEY (userID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
     CONSTRAINT FK_GroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID) -- The gID in this relation is a group in this social media platform. This reference allows for a connection between the member and the group's attributes that they belong to, as it allows for access to the group's attributes.
 
 );
