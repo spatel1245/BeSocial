@@ -7,7 +7,8 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
  END;
  $$ LANGUAGE plpgsql;
 
- DROP TRIGGER if EXISTS add_message_recipient on message;
+
+DROP TRIGGER if EXISTS add_message_recipient on message;
  CREATE TRIGGER add_message_recipient
  AFTER INSERT ON message
  FOR EACH ROW
@@ -17,7 +18,8 @@ CREATE OR REPLACE FUNCTION delete_pending_friendRequest()
 RETURNS TRIGGER
  AS $$
  BEGIN
-    DELETE FROM pendingfriend WHERE pendingFriend.userID1= NEW.userID1;
+    DELETE FROM pendingfriend WHERE pendingFriend.userID1= NEW.userID1 AND
+                                    pendingFriend.userID2= New.userID2;
     RETURN NEW;
  END;
  $$ LANGUAGE plpgsql;
