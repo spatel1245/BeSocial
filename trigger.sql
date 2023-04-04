@@ -29,3 +29,19 @@ RETURNS TRIGGER
  AFTER INSERT ON friend
  FOR EACH ROW
  EXECUTE FUNCTION delete_pending_friendRequest();
+
+CREATE OR REPLACE FUNCTION updateGroup()
+RETURNS TRIGGER
+ AS $$
+ BEGIN
+    DELETE FROM pendinggroupmember where pendinggroupmember.userid = new.userId;
+    RETURN NEW;
+ END;
+ $$ LANGUAGE plpgsql;
+
+ DROP TRIGGER if EXISTS updateGroup on groupinfo;
+ CREATE TRIGGER updateGroup
+ AFTER INSERT ON pendinggroupmember
+ FOR EACH ROW
+ EXECUTE FUNCTION updateGroup();
+
