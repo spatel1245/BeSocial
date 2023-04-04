@@ -61,7 +61,7 @@ CREATE TABLE groupMember
     gID INTEGER NOT NULL,--Assume that groupId is necessary to identify group as a primary key.
     userID INTEGER NOT NULL,--Assume that userID cannot be null to identify which profile is in the group.
     role VARCHAR(20) NOT NULL       DEFAULT 'member', --Assume that each member must be be a manager or a member to enable appropriate permissions
-    lastConfirmed TIMESTAMP NOT NULL DEFAULT current_time,--Assume that this is the time that the user was accepted into the group.
+    lastConfirmed TIMESTAMP NOT NULL,--Assume that this is the time that the user was accepted into the group.
 
     CONSTRAINT PK_groupMember PRIMARY KEY (gID, userID),-- gID and userID(1) are the primary key for this relation as a groupMember is a user(profile) that belongs to a group. Both are necessary to uniquely identify the group member.
     CONSTRAINT FK_GroupMember FOREIGN KEY (userID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
@@ -74,7 +74,7 @@ CREATE TABLE pendingGroupMember
     gID INTEGER NOT NULL,--Assume that gID is cannot be null to identify which group the profile is attempting to join.
     userID INTEGER NOT NULL,--Assume that userID cannot be null to identify which profile is attempting to join the group.
     requestText VARCHAR(200) NOT NULL DEFAULT 'I would like to join your group!',--
-    requestTime TIMESTAMP NOT NULL DEFAULT current_time,-- Assume that request time cannot be null 
+    requestTime TIMESTAMP,-- Assume that request time cannot be null
 
 CONSTRAINT PK_pendingGroupMember PRIMARY KEY (gID, UserID), --similar to the groupMember relation, in order to uniquely identify a member's pending request to join a group, both the user that is requesting to join, and the group's ID are necessary.
 CONSTRAINT FK_pendingGroupMember FOREIGN KEY (userID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
@@ -84,10 +84,10 @@ CONSTRAINT FK_pendingGroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID) --
 CREATE TABLE message
 (
     msgID INTEGER NOT NULL,
-    fromID INTEGER NOT NULL,
-    messageBody VARCHAR(200),
-    toUserID INTEGER NOT NULL,
-    toGroupID INTEGER,
+    fromID INTEGER NOT NULL, -- Assume that message must be sent from a user.
+    messageBody VARCHAR(200) NOT NULL, --Assume that message cannot be null or empty
+    toUserID INTEGER, --Assume that a toUSerId may be null the groupID is not null.
+    toGroupID INTEGER, --Assume that toGroupId may be null if the to UserId is not null
     timeSent TIMESTAMP NOT NULL,
 
     CONSTRAINT PK_message PRIMARY KEY (msgID) -- Messages are uniquely identified by their message ID. Each message has their own and this can never be null.
@@ -95,8 +95,8 @@ CREATE TABLE message
 
 CREATE TABLE messageRecipient
 (
-    msgID INTEGER NOT NULL,
-    userID INTEGER NOT NULL,
+    msgID INTEGER NOT NULL, --Assume that message Id cannot be null in order for a messageRecipient to exist a message must have been recieved
+    userID INTEGER NOT NULL, --Assume that the userId cannot be null since in order for a messageRecipient to exist some profile must have recieved the message
 
     CONSTRAINT PK_messageRecipient PRIMARY KEY  (msgId, userID), -- Both the msgID and userID are the primary key as in order to uniquely identify who the recipient of a message is, we must know the user (identified by userID) and the message they receive (messageID)
     CONSTRAINT FK_messageRecipient FOREIGN KEY (msgID) REFERENCES message(msgID), -- this reference allows for access of the message's attributes.
