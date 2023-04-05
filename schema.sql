@@ -9,8 +9,6 @@ DROP TABLE IF EXISTS messageRecipient CASCADE;
 DROP TABLE IF EXISTS clock CASCADE;
 
 
-
-
 -- *NOTE: Assumptions + rationale on our selection of integrity constraints are commented next to the constraints in the relations
 
 CREATE TABLE profile
@@ -32,7 +30,7 @@ CREATE TABLE friend
     userID2 INTEGER NOT NULL,
     JDate DATE NOT NULL    DEFAULT CURRENT_DATE,-- Assume that date cannot be before the application was released. January 1st 2015.
     requestText VARCHAR(200) DEFAULT 'You have a new friendRequest',
-
+    -- userID1 and userID2 can't be the same so that a user can't be friends with themselves
     CONSTRAINT PK_FRIEND PRIMARY KEY(userID1, userID2) --Both userID1 and userID2 are the primary key because to uniquely identify a friendship, both friends (userIDs) are necessary
 );
 
@@ -41,8 +39,8 @@ CREATE TABLE pendingFriend
     userID1 INTEGER NOT NULL, --Assume that If friend tuple exists between user1 and 2 pendingFriend between users cannot exist.
     userID2 INTEGER NOT NULL,
     requestText VARCHAR(200) DEFAULT 'You have a new friendRequest',
-
-CONSTRAINT PK_pendingFriend PRIMARY KEY (userId1, userID2) --similar to the friend relation, in order to uniquely identify a pending friendship, both users are necessary
+    -- userID1 and userID2 can't be the same so that a user can't req. to be friends with themselves
+    CONSTRAINT PK_pendingFriend PRIMARY KEY (userId1, userID2) --similar to the friend relation, in order to uniquely identify a pending friendship, both users are necessary
 );
 
 CREATE TABLE groupInfo
@@ -74,11 +72,11 @@ CREATE TABLE pendingGroupMember
     gID INTEGER NOT NULL,--Assume that gID is cannot be null to identify which group the profile is attempting to join.
     userID INTEGER NOT NULL,--Assume that userID cannot be null to identify which profile is attempting to join the group.
     requestText VARCHAR(200) NOT NULL DEFAULT 'I would like to join your group!',--
-    requestTime TIMESTAMP,-- Assume that request time cannot be null
+    requestTime TIMESTAMP NOT NULL,-- Assume that request time cannot be null
 
-CONSTRAINT PK_pendingGroupMember PRIMARY KEY (gID, UserID), --similar to the groupMember relation, in order to uniquely identify a member's pending request to join a group, both the user that is requesting to join, and the group's ID are necessary.
-CONSTRAINT FK_pendingGroupMember FOREIGN KEY (userID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
-CONSTRAINT FK_pendingGroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID) -- The gID in this relation is a group in this social media platform. This reference allows for a connection between the member and the group's attributes that they are requesting to belong to, as it allows for access to the group's attributes.
+    CONSTRAINT PK_pendingGroupMember PRIMARY KEY (gID, UserID), --similar to the groupMember relation, in order to uniquely identify a member's pending request to join a group, both the user that is requesting to join, and the group's ID are necessary.
+    CONSTRAINT FK_pendingGroupMember FOREIGN KEY (userID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
+    CONSTRAINT FK_pendingGroupMember1 FOREIGN KEY (gID) REFERENCES GroupInfo(GID) -- The gID in this relation is a group in this social media platform. This reference allows for a connection between the member and the group's attributes that they are requesting to belong to, as it allows for access to the group's attributes.
 );
 
 CREATE TABLE message
@@ -95,8 +93,8 @@ CREATE TABLE message
 
 CREATE TABLE messageRecipient
 (
-    msgID INTEGER NOT NULL, --Assume that message Id cannot be null in order for a messageRecipient to exist a message must have been recieved
-    userID INTEGER NOT NULL, --Assume that the userId cannot be null since in order for a messageRecipient to exist some profile must have recieved the message
+    msgID INTEGER NOT NULL, --Assume that message Id cannot be null in order for a messageRecipient to exist a message must have been received
+    userID INTEGER NOT NULL, --Assume that the userId cannot be null since in order for a messageRecipient to exist some profile must have received the message
 
     CONSTRAINT PK_messageRecipient PRIMARY KEY  (msgId, userID), -- Both the msgID and userID are the primary key as in order to uniquely identify who the recipient of a message is, we must know the user (identified by userID) and the message they receive (messageID)
     CONSTRAINT FK_messageRecipient FOREIGN KEY (msgID) REFERENCES message(msgID), -- this reference allows for access of the message's attributes.
