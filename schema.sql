@@ -30,8 +30,8 @@ CREATE TABLE friend
 (
     userID1 INTEGER NOT NULL,
     userID2 INTEGER NOT NULL,
-    JDate DATE NOT NULL       DEFAULT CURRENT_DATE,-- Assume that date cannot be before the application was released. January 1st 2015.
-    requestText VARCHAR(200),
+    JDate DATE NOT NULL    DEFAULT CURRENT_DATE,-- Assume that date cannot be before the application was released. January 1st 2015.
+    requestText VARCHAR(200) DEFAULT 'You have a new friendRequest',
 
     CONSTRAINT PK_FRIEND PRIMARY KEY(userID1, userID2) --Both userID1 and userID2 are the primary key because to uniquely identify a friendship, both friends (userIDs) are necessary
 );
@@ -40,7 +40,7 @@ CREATE TABLE pendingFriend
 (
     userID1 INTEGER NOT NULL, --Assume that If friend tuple exists between user1 and 2 pendingFriend between users cannot exist.
     userID2 INTEGER NOT NULL,
-    requestText VARCHAR(200),
+    requestText VARCHAR(200) DEFAULT 'You have a new friendRequest',
 
 CONSTRAINT PK_pendingFriend PRIMARY KEY (userId1, userID2) --similar to the friend relation, in order to uniquely identify a pending friendship, both users are necessary
 );
