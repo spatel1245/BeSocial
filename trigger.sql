@@ -3,9 +3,19 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
  RETURNS TRIGGER
  AS $$
  BEGIN
-     INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.toUserID); --might need changed
-     RETURN NEW;
- END;
+    IF(NEW.toGroupID=NULL) THEN
+        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.toUserID); --might need changed
+    ELSE
+--     FOR groupMember IN SELECT  FROM groupinfo
+--     LOOP
+--
+--     end loop;
+
+--FOR LOOP Here I have no idea
+
+    END IF;
+
+END
  $$ LANGUAGE plpgsql;
 
 DROP TRIGGER if EXISTS add_message_recipient on message;
