@@ -1,6 +1,8 @@
---1. addMessageRecipient which adds a corresponding entry into the messageRecipient relation upon adding a new message to the message relation
+--TRIGGERS
 
-
+--------------------------------------------------------------------
+--TRIGGER 1 ADD MESSAGE RECIPIENT
+-----------------------------------------------------------------
 CREATE OR REPLACE FUNCTION add_message_recipient()
  RETURNS TRIGGER
  AS $$
@@ -33,14 +35,22 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
 END
  $$ LANGUAGE plpgsql;
 
+
 DROP TRIGGER if EXISTS add_message_recipient on message;
  CREATE TRIGGER add_message_recipient
  AFTER INSERT ON message
  FOR EACH ROW
  EXECUTE FUNCTION add_message_recipient();
+------------------------------------------------------------
+--END of TRIGGER 1
+-----------------------------------------------------------
 
 
---2. updateGroup which moves a pending accepted request in the pendingGroupMember relation to the group Member relation when a member leaves the group.
+
+
+-----------------------------------------------------------------
+--TRIGGER 2 updateGroup
+-----------------------------------------------------------------
 CREATE OR REPLACE FUNCTION updateGroup()
 RETURNS TRIGGER
  AS $$
@@ -53,15 +63,16 @@ RETURNS TRIGGER
         cur_updateGroup CURSOR
             FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
         rec_groupSelected RECORD;
+        sizelimit integer;
         sizeGroup integer;
     BEGIN
-    SELECT size INTO sizeGroup FROM groupinfo WHERE old.gid = gid;
-        IF(sizeGroup<32) THEN
-        OPEN cur_updateGroup;
-        fetch cur_updateGroup into rec_updateGroup;
-        INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
-        DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
-        CLOSE cur_updateGroup;
+    SELECT COUNT(gid) INTO sizeGroup FROM groupmember WHERE old.gid = gid;
+        IF(sizeGroup<rec_groupSelected.size) THEN
+            OPEN cur_updateGroup;
+            fetch cur_updateGroup into rec_updateGroup;
+            INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
+            DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
+            CLOSE cur_updateGroup;
          end if;
 
         return new;
@@ -79,7 +90,15 @@ RETURNS TRIGGER
  FOR EACH ROW
  EXECUTE FUNCTION updateGroup();
 
---3. If a user accepts a friend request (a friendship is made between users), then the request is no longer pending. Add to friend relation & delete from pending friend relation.
+-----------------------------------------------------------------
+--TRIGGER 2  END updateGroup
+-----------------------------------------------------------------
+
+
+-----------------------------------------------------------------
+--TRIGGER 3 delete_pending_friendRequest
+-----------------------------------------------------------------
+
 CREATE OR REPLACE FUNCTION delete_pending_friendRequest()
 RETURNS TRIGGER
  AS $$
@@ -96,8 +115,15 @@ RETURNS TRIGGER
  FOR EACH ROW
  EXECUTE FUNCTION delete_pending_friendRequest();
 
+-----------------------------------------------------------------
+--END TRIGGER 3 delete_pending_friendRequest
+-----------------------------------------------------------------
 
---4.
+
+
+-----------------------------------------------------------------
+--TRIGGER 4 remove From ALL GROUP
+-----------------------------------------------------------------
 CREATE OR REPLACE FUNCTION removeFromAllGroups()
 RETURNS TRIGGER
  AS $$
@@ -114,6 +140,8 @@ END
  $$ LANGUAGE plpgsql;
 
 
+
+
  DROP TRIGGER if EXISTS removeFromAllGroups on profile;
 
  CREATE TRIGGER removeFromAllGroups
@@ -121,8 +149,14 @@ END
  FOR EACH ROW
  EXECUTE FUNCTION removeFromAllGroups();
 
+-----------------------------------------------------------------
+--END TRIGGER 4 remove From ALL GROUP
+-----------------------------------------------------------------
 
--- --5
+
+-----------------------------------------------------------------
+--BEGIN TRIGGER 5 removeDeletedUserMessages
+-----------------------------------------------------------------
 CREATE OR REPLACE FUNCTION removeDeletedUserMessages()
 RETURNS TRIGGER
  AS $$
@@ -155,7 +189,7 @@ END;
 
 --
 --  $$ LANGUAGE plpgsql;
---
+
 
  DROP TRIGGER if EXISTS removeDeletedUserMessages on profile;
  CREATE TRIGGER removeDeletedUserMessages
@@ -163,7 +197,28 @@ END;
  FOR EACH ROW
  EXECUTE FUNCTION removeDeletedUserMessages();
 
---6. Procedure
+
+-----------------------------------------------------------------
+--END TRIGGER 5 removeDeletedUserMessages
+-----------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+------------------------PROCEDURES-----------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+
+
+
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 1 createGROUP
+-----------------------------------------------------------------
 DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description varchar(200), userid int);
 CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
 AS $$
@@ -183,6 +238,14 @@ INSERT INTO groupmember VALUES (group_id, userid, 'manager', now());
 END;
 $$ LANGUAGE plpgsql;
 
+-----------------------------------------------------------------
+--END PROCEDURE 1 createGROUP
+-----------------------------------------------------------------
+
+
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 2 add_select_friend_reqs
+-----------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
 AS $$
@@ -199,20 +262,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
-AS $$
-DECLARE
-    i integer;
-BEGIN
-    FOR i IN 1..array_length(userID_list, 1) LOOP
-           --write the code that will insert into friends all current_userID & userID_list
-            INSERT INTO friend VALUES(userid1,userID_list[i],DEFAULT,DEFAULT);
-    END LOOP;
+-----------------------------------------------------------------
+--END PROCEDURE 2 add_select_friend_reqs
+-----------------------------------------------------------------
 
-        DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
-    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
-END;
-$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 3 createPendingGroupMembers
+-----------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
 AS $$
@@ -222,7 +279,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-----------------------------------------------------------------
+--END PROCEDURE 3 createPendingGroupMembers
+-----------------------------------------------------------------
 
+
+-----------------------------------------------------------------
+--Begin PROCEDURE 4 confirmGroupMembers
+-----------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE confirmGroupMembers(group_id integer, pendingMember_list integer[])
 AS $$
@@ -240,6 +304,10 @@ BEGIN
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END PROCEDURE 4 confirmGroupMembers
+-----------------------------------------------------------------
 
 
 
