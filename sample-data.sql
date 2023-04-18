@@ -100,7 +100,6 @@ INSERT INTO profile VALUES (99, 'Melissa Holden', 'reginasalinas@example.org', '
 INSERT INTO profile VALUES (100, 'Kathleen Sanders', 'bmiles@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
 
 
-
 INSERT INTO friend VALUES (41, 97, '2016-05-20');
 INSERT INTO friend VALUES (42, 94, '2019-12-01');
 INSERT INTO friend VALUES (61, 97, '2022-08-22');
@@ -341,6 +340,18 @@ INSERT INTO groupMember VALUES (6, 35, 'manager', '2023-03-15T23:07:31');
 INSERT INTO groupMember VALUES (7, 10, 'manager', '2023-03-29T00:58:12');
 INSERT INTO groupMember VALUES (10, 92, 'manager', '2023-04-03T09:57:56');
 INSERT INTO groupMember VALUES (2, 73, 'member', '2022-10-09T07:49:08');
+
+
+INSERT INTO pendinggroupmember VALUES(2,10, 'Can I join your group', '2022-10-09T07:49:08');
+INSERT INTO pendinggroupmember VALUES(3,10, 'Can I join your group', '2021-10-09T07:49:08');
+INSERT INTO pendinggroupmember VALUES(2,11, 'Can I join your group', '2021-10-09T07:49:08');
+INSERT INTO pendinggroupmember VALUES(2,12, 'Can I join your group', '2020-10-09T07:49:08');
+INSERT INTO pendinggroupmember VALUES(2,14, 'Can I join your group', '2019-10-09T07:49:08');
+
+DELETE FROM groupmember
+    WHERE
+        userID=73 AND gid=2;
+
 INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, 2, '2022-04-20T09:23:35');
 INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 1, NULL,'2022-10-06T18:15:26');
 INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 1, NULL, '2022-10-14T18:46:58');

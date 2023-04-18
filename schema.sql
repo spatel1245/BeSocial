@@ -72,7 +72,7 @@ CREATE TABLE groupMember
 
 );
 
-CREATE TABLE pendingGroupMember
+CREATE TABLE  pendingGroupMember
 (
     gID INTEGER NOT NULL,--Assume that gID is cannot be null to identify which group the profile is attempting to join.
     userID INTEGER NOT NULL,--Assume that userID cannot be null to identify which profile is attempting to join the group.
