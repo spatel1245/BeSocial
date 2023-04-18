@@ -1,4 +1,4 @@
-INSERT INTO profile VALUES (1, 'Lisa Robinson', 'kingkimberly@example.com', '_9QwOuHC', '1998-09-09', '2022-06-16T16:51:28');
+INSERT INTO profile VALUES (1, 'Lisa Robinson', 'kingkimberly@example.com', '_9QwOuHC', '1988-09-09', '2022-06-16T16:51:28');
 INSERT INTO profile VALUES (2, 'Jessica Savage', 'stephen69@example.org', 'T#wv4ZPs', '1983-02-23', '2022-09-22T11:32:03');
 INSERT INTO profile VALUES (3, 'Jack Moore MD', 'emeza@example.org', '^4H@6usa', '1962-06-04', '2022-06-15T22:44:41');
 INSERT INTO profile VALUES (4, 'Ryan Vargas', 'cbarrett@example.net', 'I%7VHugz', '1959-05-06', '2022-09-15T11:37:42');
@@ -44,10 +44,10 @@ INSERT INTO profile VALUES (43, 'Jamie Washington', 'uhunt@example.net', '@U5xV9
 INSERT INTO profile VALUES (44, 'Kevin Moore', 'virginia33@example.org', '@0ZJ)hl0', '1979-06-25', '2022-09-15T07:56:14');
 INSERT INTO profile VALUES (45, 'Wayne Rich', 'longdana@example.org', '(5Sns0ed', '1963-07-01', '2022-11-28T01:52:30');
 INSERT INTO profile VALUES (46, 'Edward Stone', 'derekreilly@example.org', '3_Rt6iZy', '1935-05-29', '2022-06-01T15:48:54');
-INSERT INTO profile VALUES (47, 'Pamela King', 'tdavis@example.net', 'jd%06Cnw', '2010-10-13', '2023-03-26T21:45:04');
-INSERT INTO profile VALUES (48, 'Rebecca Ray', 'lisaberry@example.org', '(z@6Vhv$', '2008-08-15', '2023-01-28T04:56:40');
+INSERT INTO profile VALUES (47, 'Pamela King', 'tdavis@example.net', 'jd%06Cnw', '1995-10-13', '2023-03-26T21:45:04');
+INSERT INTO profile VALUES (48, 'Rebecca Ray', 'lisaberry@example.org', '(z@6Vhv$', '1995-08-15', '2023-01-28T04:56:40');
 INSERT INTO profile VALUES (49, 'Ashley Peterson', 'dreese@example.net', '!r*9LzTv', '1945-11-07', '2022-12-02T20:28:57');
-INSERT INTO profile VALUES (50, 'Sara Briggs', 'nicholascox@example.org', ')0CoApBR', '2006-01-22', '2022-08-01T15:19:44');
+INSERT INTO profile VALUES (50, 'Sara Briggs', 'nicholascox@example.org', ')0CoApBR', '1995-01-22', '2022-08-01T15:19:44');
 INSERT INTO profile VALUES (51, 'Heather Moss', 'mariowright@example.net', '!e(q3Mih', '1974-10-13', '2023-02-02T16:43:32');
 INSERT INTO profile VALUES (52, 'Samuel Yoder', 'thomas58@example.net', '*2ZsHjha', '1996-02-19', '2022-08-29T20:16:18');
 INSERT INTO profile VALUES (53, 'Scott Dunlap', 'brandy09@example.com', '6iG_66Sr', '1945-06-12', '2022-07-10T16:34:27');
@@ -98,6 +98,9 @@ INSERT INTO profile VALUES (97, 'Tristan King DDS', 'christinanorton@example.net
 INSERT INTO profile VALUES (98, 'Richard Levine', 'rebecca45@example.net', 'ep^8vQ8m', '1925-07-31', '2022-08-04T20:13:33');
 INSERT INTO profile VALUES (99, 'Melissa Holden', 'reginasalinas@example.org', '#6pGh3ao', '1960-08-19', '2023-01-09T17:06:07');
 INSERT INTO profile VALUES (100, 'Kathleen Sanders', 'bmiles@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
+
+
+
 INSERT INTO friend VALUES (41, 97, '2016-05-20');
 INSERT INTO friend VALUES (42, 94, '2019-12-01');
 INSERT INTO friend VALUES (61, 97, '2022-08-22');
@@ -339,11 +342,11 @@ INSERT INTO groupMember VALUES (7, 10, 'manager', '2023-03-29T00:58:12');
 INSERT INTO groupMember VALUES (10, 92, 'manager', '2023-04-03T09:57:56');
 INSERT INTO groupMember VALUES (2, 73, 'member', '2022-10-09T07:49:08');
 INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, 2, '2022-04-20T09:23:35');
-INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 1, 2,'2022-10-06T18:15:26');
-INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 1, 2, '2022-10-14T18:46:58');
-INSERT INTO message VALUES (4, 31, 'Interview ready century bill loss center tend debate.', 1, 2, '2023-02-15T11:54:16');
-INSERT INTO message VALUES (5, 6, 'Owner worry senior those everybody who need.', 1, 2,'2022-10-14T00:07:31');
-INSERT INTO message VALUES (6, 14, 'Sport hot move shoulder middle despite accept once.', 1, 2,'2022-07-18T12:13:23');
+INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 1, NULL,'2022-10-06T18:15:26');
+INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 1, NULL, '2022-10-14T18:46:58');
+INSERT INTO message VALUES (4, 31, 'Interview ready century bill loss center tend debate.', 1, NULL, '2023-02-15T11:54:16');
+INSERT INTO message VALUES (5, 6, 'Owner worry senior those everybody who need.', NULL, 2,'2022-10-14T00:07:31');
+INSERT INTO message VALUES (6, 14, 'Sport hot move shoulder middle despite accept once.', 1, 5,'2022-07-18T12:13:23');
 INSERT INTO message VALUES (7, 56, 'Behind about piece ok mission ago while leader.', 1, 2, '2022-05-08T19:07:36');
 INSERT INTO message VALUES (8, 56, 'Especially become medical radio benefit.', 1, 2,'2022-10-04T21:08:43');
 INSERT INTO message VALUES (9, 53, 'Measure perhaps fly they give food.', 1, 2,'2022-05-18T12:09:00');
@@ -352,12 +355,12 @@ INSERT INTO message VALUES (11, 32, 'Nice over store name attention carry choice
 INSERT INTO message VALUES (12, 55, 'Meeting a about attack.', 1, 2,'2023-01-01T08:11:41');
 INSERT INTO message VALUES (13, 72, 'Store check finish point stock.', 1, 2,'2022-09-16T05:39:36');
 INSERT INTO message VALUES (14, 69, 'Community finish true.',1, 2, '2023-03-23T22:16:32');
-INSERT INTO message VALUES (15, 97, 'And what reach eight market into order.', 1, 2,'2022-04-16T13:01:07');
+INSERT INTO message VALUES (15, 97, 'And what reach eight market into order.', 1, NULL,'2022-04-16T13:01:07');
 INSERT INTO message VALUES (16, 74, 'Whatever change help spring Mrs know participant.', 1, 2, '2022-11-01T11:27:11');
 INSERT INTO message VALUES (17, 40, 'Recently small that speech with.', 1, 2, '2022-06-02T03:53:47');
 INSERT INTO message VALUES (18, 5, 'Language heart major Mr southern ball.', 1, 2,'2022-09-14T22:02:38');
-INSERT INTO message VALUES (19, 75, 'Range practice ahead water citizen sign approach future.', 1, 2,'2022-09-24T07:38:40');
-INSERT INTO message VALUES (20, 81, 'Girl certain major speech make.', 1, 2,'2023-03-29T11:37:14');
+INSERT INTO message VALUES (19, 75, 'Range practice ahead water citizen sign approach future.', 1, 3,'2022-09-24T07:38:40');
+INSERT INTO message VALUES (20, 81, 'Girl certain major speech make.', null, 3,'2023-03-29T11:37:14');
 INSERT INTO message VALUES (21, 69, 'Science good wrong activity card parent.', 1, 2,'2022-08-11T08:53:50');
 INSERT INTO message VALUES (22, 53, 'Across keep degree site writer public into.', 1, 2,'2023-01-22T16:07:11');
 INSERT INTO message VALUES (23, 11, 'Decade always art.',1, 2, '2022-10-16T01:24:24');

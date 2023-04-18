@@ -4,7 +4,7 @@ ALTER TABLE profile
 
 ALTER TABLE profile
     ADD CONSTRAINT PROFILE_check_underAge
-    CHECK (profile.date_of_birth>'2009-12-31');
+    CHECK (profile.date_of_birth<'2023-12-31');
 
 ALTER TABLE friend
     ADD CONSTRAINT FRIEND_check_no_duplicate_users
