@@ -112,10 +112,11 @@ CREATE TABLE messageRecipient
 
 CREATE TABLE clock
 (
-    pseudo_time TIMESTAMP DEFAULT '2022-01-01 00:00:00', --Correctly initialized to 12:00AM on January 1st, 2022
+    pseudo_time TIMESTAMP,
     CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
 );
 
+CREATE
 
 
 

@@ -165,28 +165,14 @@ END;
  EXECUTE FUNCTION removeDeletedUserMessages();
 
 --6. Procedure
-DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description varchar(200), userid int);
-CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
+CREATE OR REPLACE PROCEDURE createGroup ( name varchar(50), size int, description varchar(200), profile int)
 AS $$
 BEGIN
-    INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
-    INSERT INTO groupmember VALUES (1, userid, 'manager', now());
+    INSERT INTO groupinfo VALUES (DEFAULT, $1, $2, $3);
+    INSERT INTO groupmember VALUES (last_value('group_info') over (), $4, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
 
+call createGroup('Dog',5, 'hi i am a dog',1 )
 
-CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
-AS $$
-DECLARE
-    i integer;
-BEGIN
-    FOR i IN 1..array_length(userID_list, 1) LOOP
-           --write the code that will insert into friends all current_userID & userID_list
-            INSERT INTO friend VALUES(userid1,userID_list[i],DEFAULT,DEFAULT);
-    END LOOP;
-
-        DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
-    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
-END;
-$$ LANGUAGE plpgsql;
