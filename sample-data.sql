@@ -304,6 +304,7 @@ INSERT INTO friend VALUES (74, 80, '2017-01-12');
 INSERT INTO friend VALUES (50, 71, '2019-10-24');
 INSERT INTO friend VALUES (19, 63, '2018-01-13');
 INSERT INTO friend VALUES (56, 6, '2017-06-29');
+
 INSERT INTO groupInfo VALUES (DEFAULT,'treat', 9, 'Democrat push true resource.');
 INSERT INTO groupInfo VALUES (DEFAULT, 'top', 9, 'Important low no if institution account.');
 INSERT INTO groupInfo VALUES (DEFAULT, 'yeah', 5, 'Type soon yard whom important sport such.');

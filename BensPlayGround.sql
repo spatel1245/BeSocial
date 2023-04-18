@@ -351,6 +351,8 @@ INSERT INTO pendinggroupmember VALUES(2,11, 'Can I join your group', '2021-10-09
 INSERT INTO pendinggroupmember VALUES(2,12, 'Can I join your group', '2020-10-09T07:49:08');
 INSERT INTO pendinggroupmember VALUES(2,14, 'Can I join your group', '2019-10-09T07:49:08');
 
+call creategroup('Ben', 4, 'hello',1);
+
 DELETE FROM profile
     WHERE
         userID=6;
