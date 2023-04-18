@@ -9,11 +9,13 @@ DROP TABLE IF EXISTS messageRecipient CASCADE;
 DROP TABLE IF EXISTS clock CASCADE;
 
 
+
+
 -- *NOTE: Assumptions + rationale on our selection of integrity constraints are commented next to the constraints in the relations
 
 CREATE TABLE profile
 (
-    userID INTEGER NOT NULL,--Assume user ID is needed to identify user.
+    userID SERIAL NOT NULL,--Assume user ID is needed to identify user.
     name VARCHAR(50) not null,
     email VARCHAR(50) not null, --Assume emails must be unique since email is required to make an account.
     password VARCHAR(50) not null, --Password cannot be empty
