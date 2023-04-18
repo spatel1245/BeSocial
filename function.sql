@@ -18,9 +18,9 @@ DECLARE
     i integer;
 BEGIN
     FOR i IN 1..array_length(userID_list, 1) LOOP
-           --write the code that will insert into friends all current_userID & userID_list
+            INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], NOW());
     END LOOP;
+    DELETE FROM pendingfriend WHERE userID2 = current_userID;
 
-    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;
