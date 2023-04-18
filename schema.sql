@@ -33,7 +33,7 @@ CREATE TABLE friend
     -- userID1 and userID2 can't be the same so that a user can't be friends with themselves
     CONSTRAINT PK_FRIEND PRIMARY KEY(userID1, userID2), --Both userID1 and userID2 are the primary key because to uniquely identify a friendship, both friends (userIDs) are necessary
     CONSTRAINT FK_friend FOREIGN KEY (userID1) REFERENCES profile(userID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
-    CONSTRAINT FK_friend FOREIGN KEY (userID2) REFERENCES profile(userID)
+    CONSTRAINT FK_friend1 FOREIGN KEY (userID2) REFERENCES profile(userID)
 );
 
 CREATE TABLE pendingFriend
@@ -44,7 +44,7 @@ CREATE TABLE pendingFriend
     -- userID1 and userID2 can't be the same so that a user can't req. to be friends with themselves
     CONSTRAINT PK_pendingFriend PRIMARY KEY (userId1, userID2), --similar to the friend relation, in order to uniquely identify a pending friendship, both users are necessary
     CONSTRAINT FK_pendingFriend FOREIGN KEY (userID1) REFERENCES profile(userID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
-    CONSTRAINT FK_pendingFriend FOREIGN KEY (userID2) REFERENCES profile(userID)
+    CONSTRAINT FK_pendingFriend1 FOREIGN KEY (userID2) REFERENCES profile(userID)
 );
 
 CREATE TABLE groupInfo
