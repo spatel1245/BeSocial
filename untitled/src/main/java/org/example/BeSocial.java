@@ -2,6 +2,7 @@ package org.example;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -9,7 +10,7 @@ public class BeSocial{
 
     private static final String url = "jdbc:postgresql://localhost:5432/";
     private static final String user = "postgres";
-    private static final String pass = "PASSWORD";
+    private static final String pass = "4qwkzaaw";
     public static Profile currentAccount = null;
 
     public static void main(String[] args) throws SQLException {
@@ -81,8 +82,7 @@ public class BeSocial{
                         // Code to drop a profile
                         break;
                     case 3:
-                        System.out.println("You chose option 3: Initiate Friendship");
-                        //Dashboard.initiateFriendshipMessage();
+                        Dashboard.startInitiateFriendship();
                         break;
                     case 4:
                         Dashboard.startConfirmFriendRequest();
@@ -316,12 +316,13 @@ public class BeSocial{
                 preparedStatement.setString(3, message);
                 preparedStatement.executeUpdate();
                 conn.close();
-                System.out.println("request was sent");
+                System.out.println("Your friend request was sent");
                 return 1;
-
             }
+            System.out.println("Request not sent.");
+            return -1;
         }
-
+        System.out.println("Request failed.");
         return -1;
     }
 
@@ -343,6 +344,7 @@ public class BeSocial{
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
         preparedStatement.setInt(1, currentAccount.getUserID());
         ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
 
         List<FriendRequest> friendRequestList = new ArrayList<>();
         while(response.next()){
@@ -353,16 +355,27 @@ public class BeSocial{
             friendRequestList.add(friendRequest);
         }
 
-        Dashboard.displayFriendRequests(friendRequestList);
-        List<Integer> toAdd = Dashboard.getFriendsToAdd(friendRequestList.size());
+        int responseCode = Dashboard.displayFriendRequests(friendRequestList);
+        if(responseCode==-1) return -1;
 
+        Integer[] toAdd = Dashboard.getFriendsToAdd(friendRequestList);
+        if(toAdd.length==0){
+            System.out.println("No new friends were add. Requests deleted!");
+            return -1;
+        }else{
+            System.out.println("IDs that are being added: " + Arrays.toString(toAdd));
+        }
 
-
-
-        System.out.println();
-
+        conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("call add_select_friend_reqs(?,?)");
+        callableStatement.setInt(1, currentAccount.getUserID());
+        callableStatement.setArray(2, conn.createArrayOf("INTEGER", toAdd));
+        callableStatement.execute();
         conn.close();
-        return -1;
+
+        System.out.println("Selected friends were added!");
+
+        return 1;
     }
 
     private static int removeRemainingFriendRequests() throws SQLException{
@@ -649,68 +662,23 @@ public class BeSocial{
 
 
 
-        //code for confirm friend request--------------------------------------------------------
-        private static void startConfirmFriendRequest() throws SQLException {
-            confirmFriendRequests();
-            //getFriendsToAdd();
-            return;
+        //code for initiate friend request--------------------------------------------------------
+        private static int startInitiateFriendship() throws SQLException {
+            int toUserID = getUserID();
+            initiateFriendship(toUserID);
+            return 1;
         }
-
-        public static void displayFriendRequests(List<FriendRequest> response) {
-            if(response.size()==0){
-                System.out.println("No Pending Friend Requests");
-                return;
+        private static int getUserID(){
+            System.out.print("Enter the UserID of the person you would like to request.\nUserID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int userID = Integer.parseInt(input);
+                return userID;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the UserID of the user you would like to request.");
             }
-
-            System.out.println("-------+------------------+------------------------------+");
-            System.out.printf("%-3s | %-16s | %-28s |\n", "Req. #" ,"From UserID", "Request Text");
-            System.out.println("-------+------------------+------------------------------+");
-            int i=1;
-            for (FriendRequest fr : response) {
-                int userID = fr.getUserID1();
-                String requestText = fr.getRequestText();
-                System.out.printf("%-6s | %-16d | %-28s |\n",i++, userID, requestText);
-            }
-            System.out.println("-------+------------------+------------------------------+");
+            return -1;
         }
-        private static List<Integer>getFriendsToAdd(int numberOfReqs){
-            List<Integer> toAdd = new ArrayList<>();
-            boolean done = false;
-            while (!done) {
-                System.out.print("Enter a request number to accept (or 'ALL' for all or 'DONE' to stop): ");
-                String input = scanner.nextLine().trim().toUpperCase();
-
-                switch (input) {
-                    case "ALL":
-                        toAdd.clear();
-                        for (int i = 1; i <= numberOfReqs; i++) {
-                            toAdd.add(i-1); //-1 since it will correspond to the index in caller
-                        }
-                        System.out.println("Accepted all requests.");
-                        break;
-                    case "DONE":
-                        done = true;
-                        break;
-                    default:
-                        try {
-                            int requestNumber = Integer.parseInt(input);
-                            if (requestNumber >= 1 && requestNumber <= numberOfReqs) {
-                                toAdd.add(requestNumber-1); //-1 since it will correspond to the index in caller
-                                System.out.printf("Added request %d.%n", requestNumber);
-                            } else {
-                                System.out.printf("Request number must be between 1 and %d.%n", numberOfReqs);
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid input.");
-                        }
-                }
-            }
-            return toAdd;
-        }
-        //end code for confirm friend request----------------------------------------------------
-
-
-
         private static String initiateFriendshipMessage(String name){
             System.out.printf("You are sending a friend request to %s. Enter your message below.\n", name);
             System.out.print("Message: ");
@@ -724,6 +692,73 @@ public class BeSocial{
                 return null;
             }
         }
+        //end code for initiate friend request--------------------------------------------------------
+
+
+
+        //code for confirm friend request--------------------------------------------------------
+        private static void startConfirmFriendRequest() throws SQLException {
+            confirmFriendRequests();
+            //getFriendsToAdd();
+            return;
+        }
+        public static int displayFriendRequests(List<FriendRequest> response) {
+            if(response.size()==0){
+                System.out.println("No Pending Friend Requests");
+                return -1;
+            }
+
+            System.out.println("-------+------------------+------------------------------+");
+            System.out.printf("%-3s | %-16s | %-28s |\n", "Req. #" ,"From UserID", "Request Text");
+            System.out.println("-------+------------------+------------------------------+");
+            int i=1;
+            for (FriendRequest fr : response) {
+                int userID = fr.getUserID1();
+                String requestText = fr.getRequestText();
+                System.out.printf("%-6s | %-16d | %-28s |\n",i++, userID, requestText);
+            }
+            System.out.println("-------+------------------+------------------------------+");
+            return 1;
+        }
+        private static Integer[] getFriendsToAdd(List<FriendRequest> friendRequestList){
+            int MAX_NUM=friendRequestList.size();
+            ArrayList<Integer> newList = new ArrayList<>(MAX_NUM);
+            boolean done = false;
+            while (!done) {
+                System.out.print("Enter a request number to accept (or 'ALL' for all or 'DONE' to stop): ");
+                String input = scanner.nextLine().trim().toUpperCase();
+                int cur=0;
+                switch (input) {
+                    case "ALL":
+                        newList.clear();
+                        for (int i = 0; i < MAX_NUM; i++) {
+                            newList.add(friendRequestList.get(i).getUserID1());
+                        }
+                        System.out.println("Accepted all requests.");
+                        break;
+                    case "DONE":
+                        done = true;
+                        break;
+                    default:
+                        try {
+                            int requestNumber = Integer.parseInt(input);
+                            if (requestNumber >= 1 && requestNumber <= MAX_NUM) {
+                                newList.add(friendRequestList.get(requestNumber-1).getUserID1());
+                                //toAdd[cur++]=friendRequestList.get(requestNumber-1).getUserID1(); //-1 since it will correspond to the index in caller
+                                System.out.printf("Added request %d, UserID: %d.\n", requestNumber, friendRequestList.get(requestNumber-1).getUserID1());
+                            } else {
+                                System.out.printf("Request number must be between 1 and %d.%n", friendRequestList.size());
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input.");
+                        }
+                }
+            }
+            return newList.toArray(new Integer[0]);
+        }
+        //end code for confirm friend request----------------------------------------------------
+
+
 
     }
 }
