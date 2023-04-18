@@ -193,11 +193,12 @@ public class BeSocial{
 
         Connection conn = openConnection();
 
-        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(?, ?, ?, ?)");
+        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
         preparedStatement.setString(1, name);
         preparedStatement.setString(2, email);
         preparedStatement.setString(3, password);
-        preparedStatement.setString(4, DOB);
+        preparedStatement.setDate(4, Date.valueOf(DOB));
+        //preparedStatement.setString(4, DOB);
         preparedStatement.executeUpdate();
 
         //TODO: we should be returning the ID of the user that was just added. For now we are just
@@ -377,12 +378,16 @@ public class BeSocial{
 
         return 1;
     }
+    public static int createGroup(String groupName, String description, int membershipLimit) throws SQLException {
+        if(currentAccount==null) return -1;
 
-    private static int removeRemainingFriendRequests() throws SQLException{
-        return -1;
-    }
+        Connection conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("call update_last_login(?,?,?,?)");
+        callableStatement.setInt(1, currentAccount.getUserID());
+        //callableStatement
+        callableStatement.execute();
+        conn.close();
 
-    public static int createGroup(){
         return -1;
     }
     public static int initiateAddingGroup(){
