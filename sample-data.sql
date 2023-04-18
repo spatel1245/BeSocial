@@ -98,7 +98,10 @@ INSERT INTO profile VALUES (97, 'Tristan King DDS', 'christinanorton@example.net
 INSERT INTO profile VALUES (98, 'Richard Levine', 'rebecca45@example.net', 'ep^8vQ8m', '1925-07-31', '2022-08-04T20:13:33');
 INSERT INTO profile VALUES (99, 'Melissa Holden', 'reginasalinas@example.org', '#6pGh3ao', '1960-08-19', '2023-01-09T17:06:07');
 INSERT INTO profile VALUES (100, 'Kathleen Sanders', 'bmiles@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
-
+INSERT INTO profile VALUES (101, 'Kathleen Sanders', 'miles@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
+INSERT INTO profile VALUES (102, 'Kathleen Sanders', 'iles@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
+INSERT INTO profile VALUES (103, 'Kathleen Sanders', 'les@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
+INSERT INTO profile VALUES (104, 'Kathleen Sanders', 'es@example.net', 'M9x&4WCx', '1999-04-24', '2022-08-26T21:12:03');
 
 INSERT INTO friend VALUES (41, 97, '2016-05-20');
 INSERT INTO friend VALUES (42, 94, '2019-12-01');
@@ -300,16 +303,16 @@ INSERT INTO friend VALUES (74, 80, '2017-01-12');
 INSERT INTO friend VALUES (50, 71, '2019-10-24');
 INSERT INTO friend VALUES (19, 63, '2018-01-13');
 INSERT INTO friend VALUES (56, 6, '2017-06-29');
-INSERT INTO groupInfo VALUES (1, 'treat', 9, 'Democrat push true resource.');
-INSERT INTO groupInfo VALUES (2, 'top', 9, 'Important low no if institution account.');
-INSERT INTO groupInfo VALUES (3, 'yeah', 5, 'Type soon yard whom important sport such.');
-INSERT INTO groupInfo VALUES (4, 'job', 1, 'One home society impact road friend.');
-INSERT INTO groupInfo VALUES (5, 'add', 14, 'Help instead system write from.');
-INSERT INTO groupInfo VALUES (6, 'myself', 25, 'Off court professor deal.');
-INSERT INTO groupInfo VALUES (7, 'little', 24, 'Tv force charge owner imagine.');
-INSERT INTO groupInfo VALUES (8, 'senior', 29, 'Seat public three treat central including.');
-INSERT INTO groupInfo VALUES (9, 'bed', 7, 'Democrat also lead cultural energy drug late.');
-INSERT INTO groupInfo VALUES (10, 'year', 33, 'Mind notice firm factor authority million agent boy.');
+INSERT INTO groupInfo VALUES (DEFAULT,'treat', 9, 'Democrat push true resource.');
+INSERT INTO groupInfo VALUES (DEFAULT, 'top', 9, 'Important low no if institution account.');
+INSERT INTO groupInfo VALUES (DEFAULT, 'yeah', 5, 'Type soon yard whom important sport such.');
+INSERT INTO groupInfo VALUES (0, 'job', 1, 'One home society impact road friend.');
+INSERT INTO groupInfo VALUES (0, 'add', 14, 'Help instead system write from.');
+INSERT INTO groupInfo VALUES (0, 'myself', 25, 'Off court professor deal.');
+INSERT INTO groupInfo VALUES (0, 'little', 24, 'Tv force charge owner imagine.');
+INSERT INTO groupInfo VALUES (0, 'senior', 29, 'Seat public three treat central including.');
+INSERT INTO groupInfo VALUES (0, 'bed', 7, 'Democrat also lead cultural energy drug late.');
+INSERT INTO groupInfo VALUES (0, 'year', 33, 'Mind notice firm factor authority million agent boy.');
 INSERT INTO groupMember VALUES (5, 62, 'member', '2023-01-21T15:17:48');
 INSERT INTO groupMember VALUES (9, 43, 'member', '2022-10-09T03:14:32');
 INSERT INTO groupMember VALUES (1, 19, 'manager', '2022-07-29T14:56:49');
@@ -348,19 +351,25 @@ INSERT INTO pendinggroupmember VALUES(2,11, 'Can I join your group', '2021-10-09
 INSERT INTO pendinggroupmember VALUES(2,12, 'Can I join your group', '2020-10-09T07:49:08');
 INSERT INTO pendinggroupmember VALUES(2,14, 'Can I join your group', '2019-10-09T07:49:08');
 
-DELETE FROM groupmember
+DELETE FROM profile
     WHERE
-        userID=14 AND gid=2;
+        userID=6;
 
 Delete FROM profile Where userid=6;
 
 
-INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, 2, '2022-04-20T09:23:35');
-INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 1, NULL,'2022-10-06T18:15:26');
-INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 1, NULL, '2022-10-14T18:46:58');
-INSERT INTO message VALUES (4, 31, 'Interview ready century bill loss center tend debate.', 1, NULL, '2023-02-15T11:54:16');
-INSERT INTO message VALUES (5, 6, 'Owner worry senior those everybody who need.', NULL, 2,'2022-10-14T00:07:31');
-INSERT INTO message VALUES (6, 14, 'Sport hot move shoulder middle despite accept once.', 1, 5,'2022-07-18T12:13:23');
+INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, NULL, '2022-04-20T09:23:35');
+INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 6, NULL,'2022-10-06T18:15:26');
+INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 6, NULL, '2022-10-14T18:46:58');
+
+INSERT INTO message VALUES (4, 101, 'Interview ready century bill loss center tend debate.', 102, NULL, '2023-02-15T11:54:16');
+INSERT INTO message VALUES (5, 101, 'Owner worry senior those everybody who need.', 103, NULL,'2022-10-14T00:07:31');
+INSERT INTO message VALUES (6, 101, 'Sport hot move shoulder middle despite accept once.', 104, NULL,'2022-07-18T12:13:23');
+
+DELETE from profile
+    WHERE userID=101;
+
+
 INSERT INTO message VALUES (7, 56, 'Behind about piece ok mission ago while leader.', 1, 2, '2022-05-08T19:07:36');
 INSERT INTO message VALUES (8, 56, 'Especially become medical radio benefit.', 1, 2,'2022-10-04T21:08:43');
 INSERT INTO message VALUES (9, 53, 'Measure perhaps fly they give food.', 1, 2,'2022-05-18T12:09:00');
