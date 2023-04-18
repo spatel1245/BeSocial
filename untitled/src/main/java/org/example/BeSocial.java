@@ -9,7 +9,7 @@ public class BeSocial{
 
     private static final String url = "jdbc:postgresql://localhost:5432/";
     private static final String user = "postgres";
-    private static final String pass = "4qwkzaaw";
+    private static final String pass = "PASSWORD";
     public static Profile currentAccount = null;
 
     public static void main(String[] args) throws SQLException {
