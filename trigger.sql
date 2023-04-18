@@ -175,7 +175,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-call createGroup('Dog',5, 'hi i am a dog',1 );
 
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
 AS $$
