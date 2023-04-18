@@ -169,8 +169,9 @@ DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description var
 CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
 AS $$
 BEGIN
-    INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
-    INSERT INTO groupmember VALUES (1, userid, 'manager', now());
+    Select nextval(pg_get_serial_sequence(groupInfo, gid)) as new_id;
+    INSERT INTO groupinfo VALUES (new_id, name, size, description);
+    INSERT INTO groupmember VALUES (new_id, userid, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
