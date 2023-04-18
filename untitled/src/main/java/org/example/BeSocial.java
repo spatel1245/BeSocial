@@ -1,5 +1,7 @@
 package org.example;
 
+import org.postgresql.jdbc2.ArrayAssistant;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +93,7 @@ public class BeSocial{
                         break;
                     case 5:
                         System.out.println("You chose option 5: Create Group");
-                        // Code to create a group
+                        Dashboard.startCreateGroup();
                         break;
                     case 6:
                         System.out.println("You chose option 6: Initiate Adding Group");
@@ -193,11 +195,12 @@ public class BeSocial{
 
         Connection conn = openConnection();
 
-        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(?, ?, ?, ?)");
+        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
         preparedStatement.setString(1, name);
         preparedStatement.setString(2, email);
         preparedStatement.setString(3, password);
-        preparedStatement.setString(4, DOB);
+        preparedStatement.setDate(4, Date.valueOf(DOB));
+        //preparedStatement.setString(4, DOB);
         preparedStatement.executeUpdate();
 
         //TODO: we should be returning the ID of the user that was just added. For now we are just
@@ -377,13 +380,20 @@ public class BeSocial{
 
         return 1;
     }
+    public static int createGroup(String groupName, String description, int membershipLimit) throws SQLException {
+        if(currentAccount==null) return -1;
 
-    private static int removeRemainingFriendRequests() throws SQLException{
-        return -1;
-    }
+        //CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
+        Connection conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("call createGroup(?,?,?,?)");
+        callableStatement.setString(1, groupName);
+        callableStatement.setInt(2, membershipLimit);
+        callableStatement.setString(3, description);
+        callableStatement.setInt(4, currentAccount.getUserID());
+        callableStatement.execute();
+        conn.close();
 
-    public static int createGroup(){
-        return -1;
+        return 1;
     }
     public static int initiateAddingGroup(){
         return -1;
@@ -758,6 +768,34 @@ public class BeSocial{
         }
         //end code for confirm friend request----------------------------------------------------
 
+
+
+        //code for create group--------------------------------------------------------
+        private static void startCreateGroup() throws SQLException {
+            List<String> resultSet = getGroupDetails();
+            createGroup(resultSet.get(0), resultSet.get(1), Integer.parseInt(resultSet.get(2)));
+        }
+
+        private static List<String> getGroupDetails(){
+            List<String> detailList = new ArrayList<>(3);
+
+            System.out.println("To create a new group, enter the details below.");
+            System.out.print("Group name: ");
+            detailList.add(scanner.nextLine().trim());
+            System.out.print("Description: ");
+            detailList.add(scanner.nextLine().trim());
+
+            try {
+                System.out.print("Max group size: ");
+                int groupSize = scanner.nextInt();
+                detailList.add(groupSize+"");
+            } catch (NumberFormatException e) {
+                System.out.println("You must enter a number for the max group size.");
+            }
+            return detailList;
+        }
+
+        //end code for create group----------------------------------------------------
 
 
     }

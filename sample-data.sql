@@ -1,8 +1,9 @@
-INSERT INTO profile VALUES (1, 'Lisa Robinson', 'lr@example.com', '_9QwOuHC', '1988-09-09', '2022-06-16T16:51:28');
-INSERT INTO profile VALUES (2, 'Jessica Savage', 'stephen69@example.org', 'T#wv4ZPs', '1983-02-23', '2022-09-22T11:32:03');
-INSERT INTO profile VALUES (3, 'Jack Moore MD', 'emeza@example.org', '^4H@6usa', '1962-06-04', '2022-06-15T22:44:41');
-INSERT INTO profile VALUES (4, 'Ryan Vargas', 'cbarrett@example.net', 'I%7VHugz', '1959-05-06', '2022-09-15T11:37:42');
-INSERT INTO profile VALUES (5, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
+INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
+INSERT INTO profile VALUES (default, 'Lisa Robinson', 'lr@email.com', 'pass', '1988-09-09', '2022-06-16T16:51:28');
+INSERT INTO profile VALUES (default, 'Jessica Savage', 'js@email.com', 'pass', '1983-02-23', '2022-09-22T11:32:03');
+INSERT INTO profile VALUES (default, 'Jack Moore MD', 'jm@email.com', 'pass', '1962-06-04', '2022-06-15T22:44:41');
+INSERT INTO profile VALUES (default, 'Ryan Vargas', 'rv@email.com', 'pass', '1959-05-06', '2022-09-15T11:37:42');
+
 
 INSERT INTO profile VALUES (6, 'Carrie Shaw', 'jodijohns@example.com', '!p5BtmJr', '1926-11-03', '2022-12-19T00:10:32');
 INSERT INTO profile VALUES (7, 'Michael Pittman', 'butlerjennifer@example.org', '(!3E8war', '2007-06-08', '2022-08-29T05:35:51');
@@ -304,6 +305,7 @@ INSERT INTO friend VALUES (74, 80, '2017-01-12');
 INSERT INTO friend VALUES (50, 71, '2019-10-24');
 INSERT INTO friend VALUES (19, 63, '2018-01-13');
 INSERT INTO friend VALUES (56, 6, '2017-06-29');
+
 INSERT INTO groupInfo VALUES (DEFAULT,'treat', 9, 'Democrat push true resource.');
 INSERT INTO groupInfo VALUES (DEFAULT, 'top', 9, 'Important low no if institution account.');
 INSERT INTO groupInfo VALUES (DEFAULT, 'yeah', 5, 'Type soon yard whom important sport such.');

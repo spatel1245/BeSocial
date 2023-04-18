@@ -13,12 +13,12 @@ DROP TABLE IF EXISTS clock CASCADE;
 
 CREATE TABLE profile
 (
-    userID INTEGER NOT NULL,--Assume user ID is needed to identify user.
+    userID SERIAL NOT NULL,--Assume user ID is needed to identify user.
     name VARCHAR(50) not null,
     email VARCHAR(50) not null, --Assume emails must be unique since email is required to make an account.
     password VARCHAR(50) not null, --Password cannot be empty
     date_of_birth DATE not null, --Users cannot be born before the year 2010.
-    lastLogin TIMESTAMP not null, --
+    lastLogin TIMESTAMP not null DEFAULT '2999-01-01 00:00:00', --set to the future
 
     CONSTRAINT PK_PROFILE PRIMARY KEY (userID), -- userID is the primary key for the profile table as it is unique for each user and cannot be null as each profile must have an ID
     CONSTRAINT UQ_EMAIL UNIQUE (email)

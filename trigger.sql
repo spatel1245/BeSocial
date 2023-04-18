@@ -168,12 +168,22 @@ END;
 DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description varchar(200), userid int);
 CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
 AS $$
+DECLARE
+    group_id integer;
 BEGIN
-    INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
-    INSERT INTO groupmember VALUES (1, userid, 'manager', now());
+    SELECT last_value(gid)
+    OVER (ORDER BY gid ASC
+       RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+       INTO group_id
+    FROM groupinfo;
+INSERT INTO groupinfo VALUES (group_id+1, name, size, description);
+
+    INSERT INTO groupmember VALUES (group_id+1, userid, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
+
+call creategroup('Ben', 5, 'hello',1);
 
 
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
