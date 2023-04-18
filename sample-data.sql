@@ -309,7 +309,7 @@ INSERT INTO groupInfo VALUES (6, 'myself', 25, 'Off court professor deal.');
 INSERT INTO groupInfo VALUES (7, 'little', 24, 'Tv force charge owner imagine.');
 INSERT INTO groupInfo VALUES (8, 'senior', 29, 'Seat public three treat central including.');
 INSERT INTO groupInfo VALUES (9, 'bed', 7, 'Democrat also lead cultural energy drug late.');
-INSERT INTO groupInfo VALUES (10, 'year', 16, 'Mind notice firm factor authority million agent boy.');
+INSERT INTO groupInfo VALUES (10, 'year', 33, 'Mind notice firm factor authority million agent boy.');
 INSERT INTO groupMember VALUES (5, 62, 'member', '2023-01-21T15:17:48');
 INSERT INTO groupMember VALUES (9, 43, 'member', '2022-10-09T03:14:32');
 INSERT INTO groupMember VALUES (1, 19, 'manager', '2022-07-29T14:56:49');
@@ -350,7 +350,10 @@ INSERT INTO pendinggroupmember VALUES(2,14, 'Can I join your group', '2019-10-09
 
 DELETE FROM groupmember
     WHERE
-        userID=73 AND gid=2;
+        userID=14 AND gid=2;
+
+Delete FROM profile Where userid=6;
+
 
 INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, 2, '2022-04-20T09:23:35');
 INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 1, NULL,'2022-10-06T18:15:26');
