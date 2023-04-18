@@ -9,13 +9,11 @@ DROP TABLE IF EXISTS messageRecipient CASCADE;
 DROP TABLE IF EXISTS clock CASCADE;
 
 
-
-
 -- *NOTE: Assumptions + rationale on our selection of integrity constraints are commented next to the constraints in the relations
 
 CREATE TABLE profile
 (
-    userID SERIAL NOT NULL,--Assume user ID is needed to identify user.
+    userID INTEGER NOT NULL,--Assume user ID is needed to identify user.
     name VARCHAR(50) not null,
     email VARCHAR(50) not null, --Assume emails must be unique since email is required to make an account.
     password VARCHAR(50) not null, --Password cannot be empty
@@ -114,10 +112,11 @@ CREATE TABLE messageRecipient
 
 CREATE TABLE clock
 (
-    pseudo_time TIMESTAMP DEFAULT '2022-01-01 00:00:00', --Correctly initialized to 12:00AM on January 1st, 2022
+    pseudo_time TIMESTAMP,
     CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
 );
 
+CREATE
 
 
 
