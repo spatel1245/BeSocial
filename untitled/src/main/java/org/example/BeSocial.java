@@ -82,7 +82,7 @@ public class BeSocial{
                         break;
                     case 3:
                         System.out.println("You chose option 3: Initiate Friendship");
-                        // Code to initiate a friendship
+                        //Dashboard.initiateFriendshipMessage();
                         break;
                     case 4:
                         Dashboard.startConfirmFriendRequest();
@@ -141,10 +141,10 @@ public class BeSocial{
                         System.out.println("You chose option 17: Three Degrees");
                     case 18:
                         logout();
+                        System.out.printf("\n\n\n\n\n\n\n\n");
                         break;
                     case 19:
-                        exit();
-                        System.out.printf("Thanks for visiting, %s\n", currentAccount.getName());
+                        System.out.printf("Thanks for visiting, %s\n", exit());
                         quit = true;
                         break;
                     default:
@@ -178,7 +178,6 @@ public class BeSocial{
 
         return connToReturn;
     }
-
 
     /**
      * Creates a new user profile with the given parameters and adds to the profile relation.
@@ -426,18 +425,22 @@ public class BeSocial{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
-        CallableStatement cs = conn.prepareCall("{call UPDATE_LAST_LOGIN(?)}");
-        cs.setInt(1, currentAccount.getUserID());
-        cs.executeUpdate();
+        CallableStatement callableStatement = conn.prepareCall("call update_last_login(?)");
+        callableStatement.setInt(1, currentAccount.getUserID());
+        callableStatement.execute();
         conn.close();
-
         currentAccount=null;
         return 1;
     }
 
-    public static int exit(){
+    public static String exit() throws SQLException {
         System.out.println("Now exiting BeSocial!");
-        return 1;
+        if(currentAccount!=null){
+            String toReturn = currentAccount.getName();
+            logout();
+            return toReturn;
+        }
+        return null;
     }
 
 
@@ -721,7 +724,6 @@ public class BeSocial{
                 return null;
             }
         }
-
 
     }
 }
