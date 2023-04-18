@@ -170,15 +170,15 @@ AS $$
 DECLARE
     group_id integer;
 BEGIN
+
+INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
     SELECT last_value(gid)
     OVER (ORDER BY gid ASC
        RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
        INTO group_id
     FROM groupinfo;
 
-INSERT INTO groupinfo VALUES (group_id+1, name, size, description);
-
-INSERT INTO groupmember VALUES (group_id+1, userid, 'manager', now());
+INSERT INTO groupmember VALUES (group_id, userid, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
