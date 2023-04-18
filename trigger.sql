@@ -200,3 +200,32 @@ BEGIN
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
+AS $$
+DECLARE
+    i integer;
+BEGIN
+    FOR i IN 1..array_length(userID_list, 1) LOOP
+           --write the code that will insert into friends all current_userID & userID_list
+            INSERT INTO friend VALUES(userid1,userID_list[i],DEFAULT,DEFAULT);
+    END LOOP;
+
+        DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
+    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
+AS $$
+DECLARE
+BEGIN
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, now());
+END;
+$$ LANGUAGE plpgsql;
+
+
+call createPendingGroupMember(1, 5, 'hello');
+
+
+
