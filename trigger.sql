@@ -30,7 +30,6 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
     Return new;
     end;--
     END IF;
-
 END
  $$ LANGUAGE plpgsql;
 
@@ -176,14 +175,13 @@ BEGIN
        RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
        INTO group_id
     FROM groupinfo;
+
 INSERT INTO groupinfo VALUES (group_id+1, name, size, description);
 
-    INSERT INTO groupmember VALUES (group_id+1, userid, 'manager', now());
+INSERT INTO groupmember VALUES (group_id+1, userid, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
-
-call creategroup('Ben', 5, 'hello',1);
 
 
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
@@ -225,7 +223,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-call createPendingGroupMember(1, 5, 'hello');
+
+CREATE OR REPLACE PROCEDURE confirmGroupMembers(group_id integer, pendingMember_list integer[])
+AS $$
+DECLARE
+    i integer;
+BEGIN
+    FOR i IN 1..array_length(pendingMember_list, 1) LOOP
+           --write the code that will insert into friends all current_userID & userID_list
+
+            INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
+    END LOOP;
+
+
+        DELETE FROM pendinggroupmember WHERE group_id=pendinggroupmember.gid;
+    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 
 

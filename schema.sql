@@ -94,9 +94,9 @@ CREATE TABLE message
     timeSent TIMESTAMP NOT NULL,
 
     CONSTRAINT PK_message PRIMARY KEY (msgID) -- Messages are uniquely identified by their message ID. Each message has their own and this can never be null.
---     CONSTRAINT FK_message1 FOREIGN KEY (fromID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
---     CONSTRAINT FK_message2 FOREIGN KEY (toUserID) REFERENCES profile(UserID),
---     CONSTRAINT FK_message3 FOREIGN KEY (toGroupID) REFERENCES groupInfo(gID) -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
+   CONSTRAINT FK_message1 FOREIGN KEY (fromID) REFERENCES profile(UserID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
+    CONSTRAINT FK_message2 FOREIGN KEY (toUserID) REFERENCES profile(UserID),
+    CONSTRAINT FK_message3 FOREIGN KEY (toGroupID) REFERENCES groupInfo(gID) -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between the user's attributes and request to join the group, as it allows for access to the user's attributes.
 );
 
 CREATE TABLE messageRecipient
