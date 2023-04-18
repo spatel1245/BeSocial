@@ -32,8 +32,8 @@ CREATE TABLE friend
     requestText VARCHAR(200) DEFAULT 'You have a new friendRequest',
     -- userID1 and userID2 can't be the same so that a user can't be friends with themselves
     CONSTRAINT PK_FRIEND PRIMARY KEY(userID1, userID2), --Both userID1 and userID2 are the primary key because to uniquely identify a friendship, both friends (userIDs) are necessary
-    CONSTRAINT FK_friend FOREIGN KEY (userID1) REFERENCES profile(userID), -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
-    CONSTRAINT FK_friend1 FOREIGN KEY (userID2) REFERENCES profile(userID)
+    CONSTRAINT FK_friend FOREIGN KEY (userID1) REFERENCES profile(userID) ON DELETE CASCADE , -- The UserID in this relation belongs to a user of the social media profile. This reference establishes a connection between their attributes and belonging to the group, as it allows for access to the user's attributes.
+    CONSTRAINT FK_friend1 FOREIGN KEY (userID2) REFERENCES profile(userID) ON DELETE CASCADE
 );
 
 CREATE TABLE pendingFriend
@@ -72,7 +72,7 @@ CREATE TABLE groupMember
 
 );
 
-CREATE TABLE pendingGroupMember
+CREATE TABLE  pendingGroupMember
 (
     gID INTEGER NOT NULL,--Assume that gID is cannot be null to identify which group the profile is attempting to join.
     userID INTEGER NOT NULL,--Assume that userID cannot be null to identify which profile is attempting to join the group.
@@ -115,6 +115,8 @@ CREATE TABLE clock
     pseudo_time TIMESTAMP DEFAULT '2022-01-01 00:00:00', --Correctly initialized to 12:00AM on January 1st, 2022
     CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
 );
+
+CREATE
 
 
 
