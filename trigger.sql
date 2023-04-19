@@ -415,27 +415,26 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 2 searchProfiles
 -----------------------------------------------------------------
+DROP FUNCTION IF EXISTS search_user_profiles(search_strings TEXT[]);
 
---
--- DROP VIEW IF EXISTS searched;
---
--- CREATE OR REPLACE VIEW searched AS
---              SELECT name
---              FROM profile
---              WHERE profile.name = ' || p_name ||';
---
---
---
--- CREATE OR REPLACE FUNCTION searchProfiles(p_name varchar(50), email varchar(50))
---     RETURNS SETOF profile AS $$
--- BEGIN
---     EXECUTE 'CREATE OR REPLACE VIEW searched AS
---              SELECT name
---              FROM profile
---              WHERE profile.name = ' || p_name ||';';
---     RETURN QUERY SELECT * FROM searched;
--- END;
--- $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION search_user_profiles(substringList TEXT[])
+RETURNS TABLE (userID INTEGER, name VARCHAR(50)) AS $$
+
+DECLARE
+    combinedSearchQuery TEXT;
+    i INTEGER;
+BEGIN
+    combinedSearchQuery := 'SELECT userID, name FROM profile WHERE';
+    FOR i IN 1..array_length(substringList, 1) LOOP
+            combinedSearchQuery := combinedSearchQuery || ' profile.name LIKE ''%' || substringList[i] ||
+                                   '%'' OR profile.email LIKE ''%' || substringList[i] || '%''';
+            IF i <> array_length(substringList, 1) THEN
+                combinedSearchQuery := combinedSearchQuery || ' OR';
+            END IF;
+    END LOOP;
+    RETURN QUERY EXECUTE combinedSearchQuery;
+END;
+$$ LANGUAGE plpgsql;
 
 
 -----------------------------------------------------------------
