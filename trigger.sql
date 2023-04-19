@@ -305,7 +305,7 @@ DECLARE
     curSize integer;
     sizelimit integer;
 BEGIN
-    SELECT COUNT(gid) FROM groupinfo WHERE old.group_id=pendingMember_list[i].gid INTO curSize;
+    SELECT COUNT(gid) FROM groupinfo WHERE group_id=pendingMember_list[i].gid INTO curSize;
     SELECT size FROM groupinfo WHERE group_id=pendingMember_list[i].gid INTO sizelimit;
     FOR i IN 1..array_length(pendingMember_list, 1) LOOP
            --write the code that will insert into friends all current_userID & userID_list
