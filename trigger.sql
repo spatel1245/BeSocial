@@ -42,43 +42,43 @@ DROP TRIGGER if EXISTS add_message_recipient on message;
 
 
 --2. updateGroup which moves a pending accepted request in the pendingGroupMember relation to the group Member relation when a member leaves the group.
-CREATE OR REPLACE FUNCTION updateGroup()
-RETURNS TRIGGER
- AS $$
-
---Should we assume that he was already excepted
- BEGIN
-     DECLARE
-        report  TEXT DEFAULT '';
-        rec_updateGroup RECORD;
-        cur_updateGroup CURSOR
-            FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
-        rec_groupSelected RECORD;
-        sizeGroup integer;
-    BEGIN
-    SELECT size INTO sizeGroup FROM groupinfo WHERE old.gid = gid;
-        IF(sizeGroup<32) THEN
-        OPEN cur_updateGroup;
-        fetch cur_updateGroup into rec_updateGroup;
-        INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
-        DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
-        CLOSE cur_updateGroup;
-         end if;
-
-        return new;
-    END;
-    END
-
-
- $$ LANGUAGE plpgsql;
-
-
- DROP TRIGGER if EXISTS updateGroup on groupmember;
-
- CREATE TRIGGER updateGroup
- AFTER DELETE ON groupmember
- FOR EACH ROW
- EXECUTE FUNCTION updateGroup();
+-- CREATE OR REPLACE FUNCTION updateGroup()
+-- RETURNS TRIGGER
+--  AS $$
+--
+-- --Should we assume that he was already excepted
+--  BEGIN
+--      DECLARE
+--         report  TEXT DEFAULT '';
+--         rec_updateGroup RECORD;
+--         cur_updateGroup CURSOR
+--             FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
+--         rec_groupSelected RECORD;
+--         sizeGroup integer;
+--     BEGIN
+--     SELECT size INTO sizeGroup FROM groupinfo WHERE old.gid = gid;
+--         IF(sizeGroup<32) THEN
+--         OPEN cur_updateGroup;
+--         fetch cur_updateGroup into rec_updateGroup;
+--         INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
+--         DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
+--         CLOSE cur_updateGroup;
+--          end if;
+--
+--         return new;
+--     END;
+--     END
+--
+--
+--  $$ LANGUAGE plpgsql;
+--
+--
+--  DROP TRIGGER if EXISTS updateGroup on groupmember;
+--
+--  CREATE TRIGGER updateGroup
+--  AFTER DELETE ON groupmember
+--  FOR EACH ROW
+--  EXECUTE FUNCTION updateGroup();
 
 --3. If a user accepts a friend request (a friendship is made between users), then the request is no longer pending. Add to friend relation & delete from pending friend relation.
 CREATE OR REPLACE FUNCTION delete_pending_friendRequest()
@@ -98,7 +98,8 @@ RETURNS TRIGGER
  EXECUTE FUNCTION delete_pending_friendRequest();
 
 
---4.
+--4.-- drop user trigger
+  --  1. the system should use a trigger to delete the user from the groups they are a member of.
 CREATE OR REPLACE FUNCTION removeFromAllGroups()
 RETURNS TRIGGER
  AS $$
@@ -115,54 +116,86 @@ END
  $$ LANGUAGE plpgsql;
 
 
- DROP TRIGGER if EXISTS removeFromAllGroups on profile;
-
+drop trigger if exists removeFromAllGroups on profile;
  CREATE TRIGGER removeFromAllGroups
  BEFORE DELETE ON profile
  FOR EACH ROW
  EXECUTE FUNCTION removeFromAllGroups();
 
+------------
+--4.-- drop user trigger (UPDATED VERSION JUST NEEDS TO DECREMENT SIZE)
+    -- 1. the system should use a trigger to delete the user from the groups they are a member of.
+
+-- CREATE OR REPLACE FUNCTION removeFromAllGroups()
+-- RETURNS TRIGGER
+-- AS $$
+-- BEGIN
+--   -- Check if the user exists in the groupmember table
+--   IF EXISTS (
+--     SELECT 1 FROM groupmember WHERE userID = old.userID
+--   ) THEN
+--     DELETE FROM groupmember WHERE userID = old.userID;   -- Delete the user's records from the groupmember table
+--           --UPDATE groupinfo SET size = size - 1 WHERE gID = old.gID;
+--   END IF;
+--
+--   DELETE FROM groupinfo WHERE gID NOT IN (   -- Delete any associated records from the group table
+--     SELECT gID FROM groupmember
+--   );
+--
+--   RETURN old;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- DROP TRIGGER IF EXISTS removeFromAllGroups ON profile;
+--
+-- CREATE TRIGGER removeFromAllGroups
+-- BEFORE DELETE ON profile
+-- FOR EACH ROW
+-- EXECUTE FUNCTION removeFromAllGroups();
+
+--  DROP TRIGGER if EXISTS removeFromAllGroups on profile;
+
 
 -- --5
-CREATE OR REPLACE FUNCTION removeDeletedUserMessages()
-RETURNS TRIGGER
- AS $$
-
---Should we assume that he was already excepted
- BEGIN
-
-     DECLARE
-        report  TEXT DEFAULT '';
-        rec_deletedUsers RECORD;
-        prof_count1 int;
-        prof_count2 int;
-
-    BEGIN
-    FOR rec_deletedUsers IN SELECT touserid,msgID,fromID FROM message WHERE old.userID=touserid OR old.userID=fromID
-    LOOP
-        SELECT COUNT(userid=rec_deletedUsers.touserid) FROM profile INTO prof_count1;
-        SELECT COUNT(userid=rec_deletedUsers.fromid) FROM profile INTO prof_count2;
-
-        IF (prof_count1>1) AND (prof_count2>1) THEN
-
---         DELETE FROM message WHERE message.msgID=rec_deletedUsers.msgID;
-        END IF;
-
-
-    end loop;
-    return old;
-END;
- END
-
+-- CREATE OR REPLACE FUNCTION removeDeletedUserMessages()
+-- RETURNS TRIGGER
+--  AS $$
 --
---  $$ LANGUAGE plpgsql;
+-- --Should we assume that he was already excepted
+--  BEGIN
 --
+--      DECLARE
+--         report  TEXT DEFAULT '';
+--         rec_deletedUsers RECORD;
+--         prof_count1 int;
+--         prof_count2 int;
+--
+--     BEGIN
+--     FOR rec_deletedUsers IN SELECT touserid,msgID,fromID FROM message WHERE old.userID=touserid OR old.userID=fromID
+--     LOOP
+--         SELECT COUNT(userid=rec_deletedUsers.touserid) FROM profile INTO prof_count1;
+--         SELECT COUNT(userid=rec_deletedUsers.fromid) FROM profile INTO prof_count2;
+--
+--         IF (prof_count1>1) AND (prof_count2>1) THEN
+--
+-- --         DELETE FROM message WHERE message.msgID=rec_deletedUsers.msgID;
+--         END IF;
+--
+--
+--     end loop;
+--     return old;
+-- END;
+--  END
+--
+-- --
+-- --  $$ LANGUAGE plpgsql;
+-- --
 
- DROP TRIGGER if EXISTS removeDeletedUserMessages on profile;
- CREATE TRIGGER removeDeletedUserMessages
- BEFORE DELETE ON profile
- FOR EACH ROW
- EXECUTE FUNCTION removeDeletedUserMessages();
+--  DROP TRIGGER if EXISTS removeDeletedUserMessages on profile;
+--  CREATE TRIGGER removeDeletedUserMessages
+--  BEFORE DELETE ON profile
+--  FOR EACH ROW
+--  EXECUTE FUNCTION removeDeletedUserMessages();
 
 --6. Procedure
 DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description varchar(200), userid int);
@@ -190,3 +223,67 @@ BEGIN
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+--
+
+-- CREATE OR REPLACE FUNCTION add_message_recipient()
+--   RETURNS TRIGGER AS $$
+--   BEGIN
+--     INSERT INTO messageRecipient (msgID, userID)
+--     VALUES (NEW.messageID, NEW.toUserID);
+--     RETURN NEW;
+--   END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER message_insert_trigger
+--   AFTER INSERT ON message
+--   FOR EACH ROW
+--   EXECUTE FUNCTION add_message_recipient();
+
+ -- 2. The system should also use a trigger to delete any message whose sender and all receivers are deleted.
+-- CREATE OR REPLACE FUNCTION delete_messages_on_profile_delete() RETURNS TRIGGER AS $$
+-- BEGIN
+--     DELETE FROM messageRecipient WHERE userID = OLD.userID;
+--     RETURN OLD;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- drop trigger if exists delete_messages_trigger on profile;
+-- CREATE TRIGGER delete_messages_trigger
+-- AFTER DELETE ON profile
+-- FOR EACH ROW
+-- EXECUTE FUNCTION delete_messages_on_profile_delete();
+
+CREATE OR REPLACE FUNCTION delete_received_messages()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM messageRecipient
+    WHERE userID = OLD.userID;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_received_messages_trigger
+AFTER DELETE ON profile
+FOR EACH ROW
+EXECUTE FUNCTION delete_received_messages();
+
+
+CREATE OR REPLACE FUNCTION delete_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM messagerecipient WHERE userid = OLD.userid;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_user_trigger
+AFTER DELETE ON profile
+FOR EACH ROW
+EXECUTE FUNCTION delete_user();
+
+
+

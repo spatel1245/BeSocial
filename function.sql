@@ -12,6 +12,8 @@ BEGIN
 END;
 $$;
 
+
+--2.
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
 AS $$
 DECLARE
