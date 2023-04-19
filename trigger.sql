@@ -49,48 +49,6 @@ END
 -----------------------------------------------------------------
 --TRIGGER 2 updateGroup
 -----------------------------------------------------------------
--- CREATE OR REPLACE FUNCTION updateGroup()
--- RETURNS TRIGGER
---  AS $$
---
--- --Should we assume that he was already excepted
---  BEGIN
---      DECLARE
---         report  TEXT DEFAULT '';
---         rec_updateGroup RECORD;
---         cur_updateGroup CURSOR
---             FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
---         rec_groupSelected RECORD;
---         sizelimit integer;
---         sizeGroup integer;
---     BEGIN
---     SELECT COUNT(gid) INTO sizeGroup FROM groupmember WHERE old.gid = gid;
---         IF(sizeGroup<rec_groupSelected.size) THEN
---             OPEN cur_updateGroup;
---             fetch cur_updateGroup into rec_updateGroup;
---             INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
---             DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
---             CLOSE cur_updateGroup;
---          end if;
---
---         return new;
---     END;
---     END
---
---
---  $$ LANGUAGE plpgsql;
---
---
---  DROP TRIGGER if EXISTS updateGroup on groupmember;
---
---  CREATE TRIGGER updateGroup
---  AFTER DELETE ON groupmember
---  FOR EACH ROW
---  EXECUTE FUNCTION updateGroup();
-
------------------------------------------------------------------
---TRIGGER 2  END updateGroup
------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION updateGroup()
 RETURNS TRIGGER
  AS $$
@@ -127,6 +85,11 @@ END
   AFTER DELETE ON groupmember
   FOR EACH ROW
  EXECUTE FUNCTION updateGroup();
+
+-----------------------------------------------------------------
+--TRIGGER 2  END updateGroup
+-----------------------------------------------------------------
+
 
 -----------------------------------------------------------------
 --TRIGGER 3 delete_pending_friendRequest
@@ -325,13 +288,21 @@ CREATE OR REPLACE PROCEDURE confirmGroupMembers(group_id integer, pendingMember_
 AS $$
 DECLARE
     i integer;
+    curSize integer;
+    sizelimit integer;
 BEGIN
+    SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
+    SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
     FOR i IN 1..array_length(pendingMember_list, 1) LOOP
            --write the code that will insert into friends all current_userID & userID_list
-
-            INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
+        if(curSize<sizelimit) then
+                INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
+                SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
+                SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
+        else
+            return;
+        end if;
     END LOOP;
-
 
         DELETE FROM pendinggroupmember WHERE group_id=pendinggroupmember.gid;
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
