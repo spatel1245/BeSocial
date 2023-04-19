@@ -3,6 +3,12 @@
 --------------------------------------------------------------------
 --TRIGGER 1 ADD MESSAGE RECIPIENT
 -----------------------------------------------------------------
+DROP TRIGGER if EXISTS add_message_recipient on message;
+CREATE TRIGGER add_message_recipient
+    AFTER INSERT ON message
+    FOR EACH ROW
+EXECUTE FUNCTION add_message_recipient();
+
 CREATE OR REPLACE FUNCTION add_message_recipient()
     RETURNS TRIGGER
 AS $$
@@ -39,6 +45,7 @@ CREATE TRIGGER add_message_recipient
     AFTER INSERT ON message
     FOR EACH ROW
 EXECUTE FUNCTION add_message_recipient();
+
 ------------------------------------------------------------
 --END of TRIGGER 1
 -----------------------------------------------------------
@@ -247,33 +254,17 @@ DECLARE
     i integer;
 BEGIN
     FOR i IN 1..array_length(userID_list, 1) LOOP
-            --write the code that will insert into friends all current_userID & userID_list
-            INSERT INTO friend VALUES(userid1,userID_list[i],DEFAULT,DEFAULT);
+            INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], NOW());
         END LOOP;
 
     DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
-    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
+
 END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
 --END PROCEDURE 2 add_select_friend_reqs
 -----------------------------------------------------------------
-
---
--- CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
--- AS $$
--- DECLARE
---     i integer;
--- BEGIN
---     FOR i IN 1..array_length(userID_list, 1) LOOP
---             INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], NOW());
---     END LOOP;
---     DELETE FROM pendingfriend WHERE userID2 = current_userID;
---
--- END;
--- $$ LANGUAGE plpgsql;
-
 
 
 
@@ -451,29 +442,12 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 3 sendMessageToFriend
 -----------------------------------------------------------------
-CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body varchar(200))
-    RETURNS BOOLEAN
+CREATE OR REPLACE PROCEDURE send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body varchar(200))
 AS $$
-
-DECLARE
-    msg_id integer;
 BEGIN
-    -- Insert the new message into the message table
     INSERT INTO message VALUES (default, user_id, message_body, friend_id, NULL, NOW()); -- will implicitly call add_message_recipient()
-
-    SELECT last_value(msg_id)
-           OVER (ORDER BY msg_id ASC
-               RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-    INTO msg_id
-    FROM message;
-    INSERT INTO messagerecipient VALUES (msg_id, friend_id);
-    RETURN true;
-EXCEPTION
-    WHEN others THEN
-        RETURN false;
 END;
 $$ LANGUAGE plpgsql;
-
 
 -----------------------------------------------------------------
 --END FUNCTION 3 SendMessageToFriend
