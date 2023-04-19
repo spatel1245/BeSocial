@@ -26,7 +26,7 @@ AS $$
 BEGIN
     IF(NEW.toGroupID is null)
     THEN
-        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.fromid);
+        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.touserid);
         Return new;
     ELSE
 
@@ -620,27 +620,19 @@ $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS display_new_messages(integer);
 CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
-    RETURNS TABLE (
-                      msgID INTEGER,
-                      messageBody varchar(200),
-                      fromID INTEGER,
-                      timeSent TIMESTAMP
-                  )
+    RETURNS SETOF message
 AS $$
 BEGIN
     RETURN QUERY
         SELECT
-            message.msgID,
-            message.messageBody,
-            message.fromID,
-            message.timeSent
+            m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
         FROM
-            message
-                JOIN messageRecipient ON message.msgID = messageRecipient.msgID
-                JOIN profile ON message.fromID = profile.userID
+            message m
+                JOIN messageRecipient r ON m.msgID = r.msgID
+                JOIN profile p ON m.fromID = p.userID
         WHERE
-                messageRecipient.userID = user_id
-          AND message.timeSent > (SELECT lastLogin FROM profile WHERE userID = user_id)
+                r.userID = user_id
+          AND m.timeSent > (SELECT lastLogin FROM profile p WHERE p.userID = user_id)
         ORDER BY
             timeSent DESC;
 END;
@@ -655,7 +647,7 @@ $$ LANGUAGE plpgsql;
 
 
 -- -----------------------------------------------------------------
---START FUNCTION 12 Check if Two Users are Friends
+--START FUNCTION 11 Check if Two Users are Friends
 -----------------------------------------------------------------
 -- CHECK FOR IF USERS ARE FRIENDS:
 DROP FUNCTION IF EXISTS checkFriendshipExists(integer, integer);
@@ -672,7 +664,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- -----------------------------------------------------------------
---START FUNCTION 12 Check if Two Users are Friends
+--START FUNCTION 11 Check if Two Users are Friends
 -----------------------------------------------------------------
 
 
