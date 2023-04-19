@@ -99,8 +99,7 @@ public class BeSocial{
                         Dashboard.startSendMessageToGroup();
                         break;
                     case 12:
-                        System.out.println("You chose option 12: Display Messages");
-                        // Code to display messages
+                        Dashboard.startDisplayMessages();
                         break;
                     case 13:
                         System.out.println("You chose option 13: Display New Messages");
@@ -600,8 +599,33 @@ public class BeSocial{
         }
     }
 
-    public static int displayMessages(){
-        return -1;
+    public static int displayMessages() throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM display_messages(?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet rs = preparedStatement.executeQuery();
+
+        List<Message> messagesList = new ArrayList<>();
+        while(rs.next()){
+            Message p = new Message();
+            p.setMsgID(rs.getInt("msgID"));
+            p.setFromID(rs.getInt("fromID"));
+            p.setMessageBody(rs.getString("messagebody"));
+            p.setTimeSent(rs.getDate("timeSent"));
+            messagesList.add(p);
+        }
+
+        int responseCode = Dashboard.displayMSGsToUser(messagesList);
+
+        if(responseCode==-1){
+            System.out.println("No messages to read.");
+            return -1;
+        }else{
+            return 1;
+        }
+
     }
 
     public static int displayNewMessages(){
@@ -732,7 +756,6 @@ public class BeSocial{
             return false;
         }
     }
-
     public static class FriendRequest{
         private int UserID1;
         private int UserID2;
@@ -809,6 +832,44 @@ public class BeSocial{
 
         public void setRequestTime(Date requestTime) {
             this.requestTime = requestTime;
+        }
+    }
+    public static class Message {
+        private int msgID;
+        private int fromID;
+        private String messageBody;
+        private Date timeSent;
+
+        public int getMsgID() {
+            return msgID;
+        }
+
+        public void setMsgID(int msgID) {
+            this.msgID = msgID;
+        }
+
+        public int getFromID() {
+            return fromID;
+        }
+
+        public void setFromID(int fromID) {
+            this.fromID = fromID;
+        }
+
+        public String getMessageBody() {
+            return messageBody;
+        }
+
+        public void setMessageBody(String messageBody) {
+            this.messageBody = messageBody;
+        }
+
+        public Date getTimeSent() {
+            return timeSent;
+        }
+
+        public void setTimeSent(Date timeSent) {
+            this.timeSent = timeSent;
         }
     }
 
@@ -1238,8 +1299,55 @@ public class BeSocial{
 
 
         //code for Display Messages -------------------------------------------------
-        public static void startDisplayMessages() {
+        public static void startDisplayMessages() throws SQLException {
+            displayMessages();
         }
+        public static int displayMSGsToUser(List<Message> messagesList) {
+            if(messagesList.size()==0) return -1;
+
+            System.out.println("+----------+--------------------------+------------------+");
+            System.out.println("| From ID  | Message                  | Time sent         |");
+            System.out.println("+----------+--------------------------+------------------+");
+            for (Message msg : messagesList) {
+                int fromID = msg.getFromID();
+                String timeSent = String.valueOf(msg.getTimeSent());
+
+                // Split the message into multiple lines if it's longer than the column width
+                String[] messageLines = splitMessage(msg.getMessageBody(), 24);
+
+                for (int i = 0; i < messageLines.length; i++) {
+                    if (i == 0) { //only one row
+                        System.out.printf("| %-8d | %-24s | %-16s |\n", fromID, messageLines[i], timeSent);
+                    }
+                    else { //multiple rows
+                        System.out.printf("| %-8s | %-24s | %-16s |\n", "", messageLines[i], "");
+                    }
+                }
+            }
+            System.out.println("+----------+--------------------------+------------------+");
+
+            System.out.print("Press enter when you are done viewing the results.");
+            scanner.nextLine();
+            return 1;
+        }
+        private static String[] splitMessage(String message, int columnWidth) {
+            // Calculate the number of rows required to display the message
+            int numRows = (int) Math.ceil((double) message.length() / columnWidth);
+
+            // Create an array of strings to hold the message lines
+            String[] messageLines = new String[numRows];
+
+            // Split the message into multiple lines
+            int startIndex = 0;
+            for (int i = 0; i < numRows; i++) {
+                int endIndex = Math.min(startIndex + columnWidth, message.length());
+                messageLines[i] = message.substring(startIndex, endIndex);
+                startIndex = endIndex;
+            }
+
+            return messageLines;
+        }
+
         //end code for Display Messages -------------------------------------------------
 
 
