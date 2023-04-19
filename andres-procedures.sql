@@ -1,220 +1,95 @@
---11.sendMessageToUser
--- With this the user can send a message to one friend given the friend’s userID. The application
--- should display the name of the recipient and the user should be prompted to enter the body
--- of the message, which could be multi-lined. Once entered, the application should “send” the
--- message to the receiving user by adding an appropriate entry into the message relation (msgIDs
--- should be auto-generated and timeSent should be set to the current time of the Clocktable)
--- and use a trigger to add a corresponding entry into the messageRecipient relation. The user
--- should lastly be shown success or failure feedback.
+----------------------------------------------------------------------------------------------------------------
+-- 18. topMessages
+-- NOTE: TO TEST PROPERLY MUST INSERT INTO CLOCK TABLE WITH INSERTS BELOW
 
--- -- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION FIXED
--- DROP FUNCTION IF EXISTS send_message_to_friend(integer, integer, text);
---
--- CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body TEXT)
---     RETURNS BOOLEAN
--- AS $$
--- BEGIN
---     -- Insert the new message into the message table
---
---     INSERT INTO message VALUES (default, user_id, friend_id, NULL, NOW(), message_body); -- will implicitly call add_message_recipient()
---
---     RETURN true;
--- EXCEPTION
---     WHEN others THEN
---         RETURN false;
--- END;
--- $$ LANGUAGE plpgsql;
-
-
-
--- 12.sendMessageToGroup
--- With this the user can send a message to a recipient group given the group ID, if the user is
--- within the group. Every member of this group should receive the message. The user should be
--- prompted to enter the body of the message, which could be multi-lined. Then the application
--- should “send” the message to the group by adding an appropriate entry into the message
--- relation (msgIDs should be auto-generated and timeSent should be set to the current time of
--- the Clock table) and use a trigger to add corresponding entries into the messageRecipient
--- relation. The user should lastly be shown success or failure feedback.
--- Note that if the user sends a message to one friend, you only need to put the friend’s userID
--- to ToUserID in the table of message. If the user wants to send a message to a group, you need
--- to put the group ID to ToGroupID in the table of message and use a trigger to populate
--- the messageRecipient table with proper user ID information as defined by the groupMember
--- relation.
-
---------
-
--- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION
-
--------------
-
--- 13.displayMessages
--- When the user selects this option, the entire contents
--- of every message sent to the user (including group messages)
--- should be displayed in a nicely formatted way.
-
-
--- DROP FUNCTION IF EXISTS display_messages;
--- CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
---     RETURNS SETOF message
--- AS $$
--- BEGIN
---     RETURN QUERY -- allows for the returned table to "communicate" with the tables we have
---     SELECT
---         m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
---     FROM
---         message m JOIN messageRecipient r ON m.msgID = r.msgID
---     WHERE
---         r.userID = user_id
---     ORDER BY
---         timeSent DESC;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- 14.displayNewMessages
--- This should display messages in the same fashion as the previous task except that only those
--- messages sent since the last time the user logged into the system should be displayed (including
--- group messages).
-
--- DROP FUNCTION IF EXISTS display_new_messages(integer);
--- CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
--- RETURNS TABLE (
---     msgID INTEGER,
---     messageBody varchar(200),
---     fromID INTEGER,
---     timeSent TIMESTAMP
--- )
--- AS $$
--- BEGIN
---     RETURN QUERY
---     SELECT
---         message.msgID,
---         message.messageBody,
---         message.fromID,
---         message.timeSent
---     FROM
---         message
---         JOIN messageRecipient ON message.msgID = messageRecipient.msgID
---         JOIN profile ON message.fromID = profile.userID
---     WHERE
---         messageRecipient.userID = user_id
---         AND message.timeSent > (SELECT lastLogin FROM profile WHERE userID = user_id)
---     ORDER BY
---         timeSent DESC;
--- END;
--- $$ LANGUAGE plpgsql;
-
----------------------------------------------------------------
---** THROWAWAY FOR ABOVE TWO FUNCTIONS
--- DROP FUNCTION IF EXISTS display_messages(integer);
--- CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
--- RETURNS TABLE (
---     msgID INTEGER,
---     timeSent TIMESTAMP,
---     messageBody varchar(200),
---     fromID INTEGER
--- )
--- AS $$
--- BEGIN
---     RETURN QUERY
---     SELECT
---         message.msgID,
---         message.timeSent,
---         message.messageBody
---
---     FROM
---         message
---         JOIN messageRecipient ON message.msgID = messageRecipient.msgID
---         JOIN profile ON message.fromID = profile.userID
---     WHERE
---         messageRecipient.userID = user_id
---     ORDER BY
---         timeSent DESC;
--- END;
--- $$ LANGUAGE plpgsql;
-
-
--- DROP FUNCTION IF EXISTS display_new_messages(integer);
--- CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
--- RETURNS TABLE (
---     msgID INTEGER,
---     messageBody varchar(200),
---     fromID INTEGER,
---     timeSent TIMESTAMP
--- )
--- AS $$
--- DECLARE
---     last_login TIMESTAMP;
--- BEGIN
---     SELECT
---         login_time
---     INTO
---         last_login
---     FROM
---         profile
---     WHERE
---         user_id = display_new_messages.user_id;
---
---     RETURN QUERY
---     SELECT
---         message.msgID,
---         message.messageBody,
---         message.fromID,
---         message.timeSent
---     FROM
---         message
---         JOIN messageRecipient ON message.msgID = messageRecipient.msgID
---     WHERE
---         messageRecipient.userID = user_id
---         AND message.timeSent > last_login
---     ORDER BY
---         timeSent DESC;
--- END;
--- $$ LANGUAGE plpgsql;
---------------------------------------
-
-CREATE OR REPLACE VIEW groups_size_ranked
-    AS
-            SELECT COUNT(userID), groupinfo.gid
-            FROM groupmember
-            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY groupinfo.gid
-            ORDER BY COUNT(userID) DESC;
-
-CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
-    RETURNS SETOF groupinfo AS $$
+DROP FUNCTION IF EXISTS top_messages(integer, integer, integer);
+CREATE OR REPLACE FUNCTION top_messages(user_ID INTEGER, x INTEGER, k INTEGER)
+RETURNS TABLE (
+    userID INTEGER,
+    num_messages INTEGER -- change the return type to BIGINT
+)
+AS $$
 BEGIN
-     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
-            SELECT COUNT(userID), groupmember.gid
-            FROM groupmember
-            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY gid
-            ORDER BY COUNT(groupmember.userID) DESC;';
-    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+    RETURN QUERY
+    SELECT profile.userID, SUM(
+        CASE
+            WHEN message.touserid = user_ID THEN 1
+            ELSE 0
+        END
+    )::INTEGER AS messages
+    FROM profile
+    JOIN message ON profile.userID = message.fromID
+    JOIN clock ON 1 = 1
+    WHERE profile.userID != user_ID
+        AND message.touserid = user_ID
+        AND (message.timesent) >= ((SELECT clock.pseudo_time FROM clock) - (x * INTERVAL '30 days'))
+    GROUP BY profile.userID, profile.name
+    ORDER BY messages DESC
+    LIMIT k;
 END;
 $$ LANGUAGE plpgsql;
 
--------------------------------------------------------------------------------------------------------------
+-- TESTING TOPMESSAGES
 
--- IN PROGRESS: if users are in the same group, they are automatically friends
-drop trigger if exists add_group_members_to_friends on groupmember;
-CREATE OR REPLACE FUNCTION add_group_members_to_friends()
-RETURNS TRIGGER AS
-$BODY$
-BEGIN
-    INSERT INTO friend (userID1, userID2)
-    SELECT DISTINCT gm1.userID, gm2.userID
-    FROM groupMember gm1, groupMember gm2
-    WHERE gm1.gID = NEW.gID AND gm2.gID = NEW.gID AND gm1.userID <> gm2.userID
-    ON CONFLICT DO NOTHING;
+INSERT INTO clock VALUES ('2022-01-01 00:00:00');
 
-    RETURN NEW;
-END;
-$BODY$
-LANGUAGE plpgsql;
+INSERT INTO profile VALUES (1, 'Lisa Robinson', 'kingkimberly@example.com', '_9QwOuHC', '1998-09-09', '2022-06-16T16:51:28');
+INSERT INTO profile VALUES (2, 'Jessica Savage', 'stephen69@example.org', 'T#wv4ZPs', '1983-02-23', '2022-09-22T11:32:03');
+INSERT INTO profile VALUES (3, 'Jack Moore MD', 'emeza@example.org', '^4H@6usa', '1962-06-04', '2022-06-15T22:44:41');
+INSERT INTO profile VALUES (4, 'Ryan Vargas', 'cbarrett@example.net', 'I%7VHugz', '1959-05-06', '2022-09-15T11:37:42');
+INSERT INTO profile VALUES (5, 'Kevin Horn', 'xmosley@example.net', 'Z$1ZV@$q', '1963-03-15', '2022-09-11T03:00:03');
+INSERT INTO profile VALUES (6, 'Carrie Shaw', 'jodijohns@example.com', '!p5BtmJr', '1926-11-03', '2022-12-19T00:10:32');
+INSERT INTO profile VALUES (7, 'Michael Pittman', 'butlerjennifer@example.org', '(!3E8war', '2007-06-08', '2022-08-29T05:35:51');
+INSERT INTO profile VALUES (8, 'Felicia Ewing', 'megan43@example.net', ')I6FbWG4', '1978-09-16', '2022-06-26T00:26:20');
+INSERT INTO profile VALUES (9, 'Ryan Wood', 'christophergomez@example.org', '^1l0$Wzu', '1989-01-21', '2022-11-27T23:34:42');
+INSERT INTO profile VALUES (10, 'Rodney Brooks', 'maureen09@example.com', '+e2VYqO%', '1929-01-05', '2022-07-09T07:10:37');
 
-CREATE TRIGGER group_member_added_to_group
-AFTER INSERT ON groupMember
-FOR EACH ROW
-EXECUTE FUNCTION add_group_members_to_friends();
 
--------------------------------------------------------------------------------------------------------------
+-- Assume we are logged in as UserID=1
+Insert into message values(1,2,'Hi!', 1, null, '2021-12-21');
+Insert into message values(2,3,'Hi!', 1, null, '2021-12-21');
+Insert into message values(3,4,'Hi!', 1, null, '2021-12-21');
+Insert into message values(4,2,'Hi!', 1, null, '2021-12-21');
+Insert into message values(5,4,'Hi!', 1, null, '2021-12-21');
+Insert into message values(7,3,'Hi!', 1, null, now()); --technically shouldnt work given clock's time
+Insert into message values(8,4,'Hi!', 1, null, now()); --technically shouldnt work given clock's time
+Insert into message values(9,4,'Hi!', 1, null, '2021-10-01');
+
+select * from top_messages(1,2, 10);
+
+Insert into message values(10,1,'Hi!',2, null, now()); --SHOULD NOT CHANGE RESULTING TABLE AS THIS IS A MESSAGE USER 1 SENT
+Insert into message values(11,2,'Hi!',1, null, now()); --technically shouldnt work given clock's time
+Insert into message values(12,2,'Hi!',1, null, '2023-01-01'); --FUTURE MESSAGE SHOULD NOT WORK AS IT DOESNT MAKE SENSE
+
+
+-------------- MIGHT NEED FOR LATER BUT NOT NOW------------------------
+-- Display the top k users with respect to the number of messages sent to the logged-in user plus
+-- the number of messages received from the logged-in user in the past x months. x and k are
+-- input parameters to this function. 1 month is defined as 30 days counting back starting from
+-- the current date of the Clocktable. Group messages do not need to be considered in this
+-- function.
+-- DROP FUNCTION IF EXISTS top_messages(integer, integer, integer);
+-- CREATE OR REPLACE FUNCTION top_messages(user_ID INTEGER, x INTEGER, k INTEGER)
+-- RETURNS TABLE (
+--     userID INTEGER,
+--     num_messages INTEGER -- change the return type to BIGINT
+-- )
+-- AS $$
+-- BEGIN
+--     RETURN QUERY
+--     SELECT profile.userID, SUM(
+--         CASE
+--             WHEN message.touserid = user_ID THEN 1
+--             ELSE 0
+--         END
+--     )::INTEGER AS messages
+--     FROM profile
+--     JOIN message ON profile.userID = message.fromID
+--     WHERE profile.userID != user_ID
+--         AND message.touserid = user_ID
+--         AND (message.timesent AT TIME ZONE 'UTC') > (CURRENT_DATE - (x * INTERVAL '1 month')) -- PRE UTILIZATION OF CLOCK TABLE
+--     GROUP BY profile.userID, profile.name
+--     ORDER BY messages DESC
+--     LIMIT k;
+-- END;
+-- $$ LANGUAGE plpgsql;
