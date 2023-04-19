@@ -96,8 +96,7 @@ public class BeSocial{
                         Dashboard.startSendMessageToUser();
                         break;
                     case 11:
-                        System.out.println("You chose option 11: Send Message to Group");
-                        // Code to send a message to a group
+                        Dashboard.startSendMessageToGroup();
                         break;
                     case 12:
                         System.out.println("You chose option 12: Display Messages");
@@ -476,10 +475,6 @@ public class BeSocial{
         ResultSet resultSet = preparedStatement.executeQuery();
         conn.close();
 
-        ResultSetMetaData metadata = resultSet.getMetaData();
-        int numColumns = metadata.getColumnCount();
-
-
 
         List<Profile> matchingProfileList = new ArrayList<Profile>();
         while(resultSet.next()){
@@ -554,8 +549,55 @@ public class BeSocial{
 
     }
 
-    public static int sendMessageToGroup(){
-        return -1;
+    public static int sendMessageToGroup(int gID) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkGroupMemberExists(?, ?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, gID);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        int member=0;
+        if (rs.next()) {
+            member = rs.getInt(1);
+            if(member==-1){
+                System.out.println("You are not a member of this group.");
+                return -1;
+            }
+        }
+
+        conn = openConnection();
+        preparedStatement = conn.prepareStatement("SELECT name FROM GROUPINFO WHERE " +
+                "gID=?");
+        preparedStatement.setInt(1, gID);
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        String name = null;
+        if (response.next()){
+            name = response.getString("name");
+            String message = Dashboard.sendMessageInput(name);
+
+            if(message!=null){
+                conn = openConnection();
+                CallableStatement callableStatement = conn.prepareCall("call send_message_to_group(?,?,?)");
+                callableStatement.setInt(1, currentAccount.getUserID());
+                callableStatement.setInt(2, gID);
+                callableStatement.setString(3, message);
+                callableStatement.executeUpdate();
+                conn.close();
+
+                System.out.println("Your message was sent.");
+                return 1;
+            }
+            System.out.println("Message not sent.");
+            return -1;
+        }else{
+            System.out.println("That group wasn't found. Message send failed.");
+            return -1;
+        }
     }
 
     public static int displayMessages(){
@@ -984,8 +1026,20 @@ public class BeSocial{
 
         //code for initiate adding group----------------------------------------------------
         public static void startInitiateAddingGroup() throws SQLException {
+
             List<String> inputDetails = getGroupReqDetails();
-            initiateAddingGroup(Integer.parseInt(inputDetails.get(0)), inputDetails.get(1));
+            while(inputDetails.size()!=2){
+                System.out.println("Your reqest was invalid. Try again.");
+                inputDetails = getGroupReqDetails();
+            }
+            int groupId=-1;
+            try{
+                groupId = Integer.parseInt(inputDetails.get(0));
+                initiateAddingGroup(groupId, inputDetails.get(1));
+            }catch (NumberFormatException e){
+                System.out.println("Enter the Group ID you would like to request.");
+            }
+
         }
         public static List<String> getGroupReqDetails(){
             List<String> toReturnDetails = new ArrayList<>(2);
@@ -1165,7 +1219,19 @@ public class BeSocial{
 
 
         //code for send Message To Group -------------------------------------------------
-        public static void startSendMessageToGroup() {
+        public static void startSendMessageToGroup() throws SQLException {
+            sendMessageToGroup(getRecipGroupID());
+        }
+        private static int getRecipGroupID(){
+            System.out.print("Enter the GroupID of the group you would like send a message to.\nUserID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int userID = Integer.parseInt(input);
+                return userID;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the GroupID of the group you would like send a message to.");
+            }
+            return -1;
         }
         //end code for send Message To Group -------------------------------------------------
 
