@@ -1487,21 +1487,18 @@ public class BeSocial{
             if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")) {
                 return;
             } else {
-                int status=1;
-                while(status!=-1) {
-                    try {
-                        if(status==2){
-                            displayUsersFriends(friendList);
-                            input = scanner.nextLine();
-                            if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")){
-                                return;
-                            }
-                        }
-                        int friendID = Integer.parseInt(input);
-                        status = viewFriendProfile(friendID);
-                    } catch (NumberFormatException | SQLException e) {
-                        System.out.println("You must either enter the User ID or \"EXIT\"!");
+                try {
+                    int friendID = Integer.parseInt(input);
+                    int status = viewFriendProfile(friendID);
+                    if (status == -1) {
+                        return;
+                    } else if (status == 2) {
+                        displayUsersFriends(friendList);
                     }
+                    viewFriendsOrExit(friendList); // Recursive call
+                } catch (NumberFormatException | SQLException e) {
+                    System.out.println("You must either enter the User ID or \"EXIT\"!");
+                    viewFriendsOrExit(friendList); // Recursive call
                 }
             }
         }
