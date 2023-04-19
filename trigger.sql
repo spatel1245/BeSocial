@@ -34,16 +34,14 @@ END
  $$ LANGUAGE plpgsql;
 
 
--- DROP TRIGGER if EXISTS add_message_recipient on message;
---  CREATE TRIGGER add_message_recipient
---  AFTER INSERT ON message
---  FOR EACH ROW
---  EXECUTE FUNCTION add_message_recipient();
+DROP TRIGGER if EXISTS add_message_recipient on message;
+ CREATE TRIGGER add_message_recipient
+ AFTER INSERT ON message
+ FOR EACH ROW
+ EXECUTE FUNCTION add_message_recipient();
 ------------------------------------------------------------
 --END of TRIGGER 1
 -----------------------------------------------------------
-
-
 
 
 -----------------------------------------------------------------
@@ -291,20 +289,21 @@ DECLARE
     curSize integer;
     sizelimit integer;
 BEGIN
-    SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
-    SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
+    SELECT COUNT(gid) FROM groupinfo WHERE old.group_id=pendingMember_list[i].gid INTO curSize;
+    SELECT size FROM groupinfo WHERE group_id=pendingMember_list[i].gid INTO sizelimit;
     FOR i IN 1..array_length(pendingMember_list, 1) LOOP
            --write the code that will insert into friends all current_userID & userID_list
         if(curSize<sizelimit) then
                 INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
-                SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
-                SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
+
+                SELECT COUNT(gid) FROM groupinfo WHERE group_id=pendingMember_list[i].gid INTO curSize;
+                SELECT size FROM groupinfo WHERE group_id=pendingMember_list[i].gid INTO sizelimit;
         else
             return;
         end if;
     END LOOP;
 
-        DELETE FROM pendinggroupmember WHERE group_id=pendinggroupmember.gid;
+        DELETE FROM pendinggroupmember WHERE pendinggroupmember.gid=group_id;
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;
@@ -313,7 +312,39 @@ $$ LANGUAGE plpgsql;
 --END PROCEDURE 4 confirmGroupMembers
 -----------------------------------------------------------------
 
+-----------------------------------------------------------------
+--Begin PROCEDURE 5 leaveGroup
+-----------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE leaveGroup(group_id integer,user_id integer)
+AS $$
+DECLARE
+BEGIN
+    DELETE FROM groupmember
 
+    WHERE gid=group_id AND user_id=userid;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END PROCEDURE 5 confirmGroupMembers
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 6 searchForProfile
+-----------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
+AS $$
+DECLARE
+
+BEGIN
+    SELECT profile.name,
+     SUBSTRING (profile.name,length(userName)) as subName
+
+    FROM profile
+    WHERE subName=
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 
