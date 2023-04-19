@@ -1,7 +1,5 @@
 package org.example;
 
-import javax.swing.*;
-import javax.xml.stream.events.ProcessingInstruction;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -111,12 +109,10 @@ public class BeSocial{
                         Dashboard.startRankGroups();
                         break;
                     case 16:
-                        System.out.println("You chose option 16: Rank Profiles");
-                        // Code to rank profiles
+                        Dashboard.startRankProfiles();
                         break;
                     case 17:
-                        System.out.println("You chose option 17: Top Messages");
-                        // Code to display top messages
+                        Dashboard.startTopMessages();
                         break;
                     case 18:
                         System.out.println("You chose option 18: Three Degrees");
@@ -719,11 +715,58 @@ public class BeSocial{
         return -1;
     }
 
-    public static int rankProfiles(){
+    public static int rankProfiles() throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        //TODO: Fill in the function name below
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM ");
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        List<Profile> listOfProfiles = new ArrayList<>();
+
+        while(rs.next()){
+            Profile p = new Profile();
+            //TODO: You might have to replace the column names here
+            p.setUserID(rs.getInt("userID"));
+            p.setCountOfSomething(rs.getInt("numFriends"));
+            listOfProfiles.add(p);
+        }
+
+        int result = Dashboard.displayListOfProfiles(listOfProfiles, "Number of Friends");
+        if(result == -1){
+            System.out.println("There are no profiles in the system.");
+        }
         return -1;
     }
 
-    public static int topMessages(){
+    public static int topMessages(int numMonths, int numUsers) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        //TODO: Fill in the function name below
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM top_messages(?,?,?)");
+        preparedStatement.setInt(1,currentAccount.getUserID());
+        preparedStatement.setInt(2,numMonths);
+        preparedStatement.setInt(3,numUsers);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        List<Profile> listOfProfiles = new ArrayList<>();
+
+        while(rs.next()){
+            Profile p = new Profile();
+            //TODO: You might have to replace the column names here
+            p.setUserID(rs.getInt("userID"));
+            p.setCountOfSomething(rs.getInt("numMessages"));
+            listOfProfiles.add(p);
+        }
+
+        int result = Dashboard.displayListOfProfiles(listOfProfiles, "Number of Messages");
+        if(result == -1){
+            System.out.println("There are no profiles in the system.");
+        }
         return -1;
     }
 
@@ -761,6 +804,7 @@ public class BeSocial{
         private String password;
         private Date dateOfBirth;
         private Date lastLogin;
+        private int countOfSomething;
 
         public Profile(int userID, String name, String email, String password, Date dateOfBirth, Date lastLogin) {
             this.userID = userID;
@@ -769,6 +813,14 @@ public class BeSocial{
             this.password = password;
             this.dateOfBirth = dateOfBirth;
             this.lastLogin = lastLogin;
+        }
+
+        public int getCountOfSomething() {
+            return countOfSomething;
+        }
+
+        public void setCountOfSomething(int countOfSomething) {
+            this.countOfSomething = countOfSomething;
         }
 
         public Profile(String email, String password) {
@@ -1163,7 +1215,6 @@ public class BeSocial{
             List<String> resultSet = getGroupDetails();
             createGroup(resultSet.get(0), resultSet.get(1), Integer.parseInt(resultSet.get(2)));
         }
-
         private static List<String> getGroupDetails(){
             List<String> detailList = new ArrayList<>(3);
 
@@ -1361,7 +1412,6 @@ public class BeSocial{
             }
             return -1;
         }
-
         public static String sendMessageInput(String name) {
             System.out.printf("You are sending a message to %s. Enter your message below.\n", name);
             System.out.print("Message: ");
@@ -1447,7 +1497,6 @@ public class BeSocial{
 
             return messageLines;
         }
-
         //end code for Display Messages -------------------------------------------------
 
 
@@ -1574,14 +1623,77 @@ public class BeSocial{
 
 
         //code for Rank Profiles -------------------------------------------------
-        public static void startRankProfiles() {
+        public static void startRankProfiles() throws SQLException {
+            rankProfiles();
+        }
+//        public static int displayListOfProfiles(List<Profile> listOfProfiles) {
+//            if (listOfProfiles.size() == 0) return -1;
+//
+//            System.out.println("+--------+----------------------+");
+//            System.out.println("| User ID| Number of Friends    |");
+//            System.out.println("+--------+----------------------+");
+//            for (Profile p : listOfProfiles) {
+//                int userID = p.getUserID();
+//                int numFriends = p.getCountOfSomething();
+//                System.out.format("| %-6d | %-20d |%n", userID, numFriends);
+//            }
+//            System.out.println("+--------+----------------------+");
+//            System.out.print("Press enter to return when you are done.");
+//            scanner.nextLine();
+//
+//            return 1;
+//        }
+        public static int displayListOfProfiles(List<Profile> listOfProfiles, String columnName) {
+            if (listOfProfiles.size() == 0) return -1;
+
+            int columnWidth = columnName.length();
+            System.out.println("+--------+----------------------+");
+            System.out.format("| %-6s | %-" + columnWidth + "s |%n", "User ID", columnName);
+            System.out.println("+--------+----------------------+");
+            for (Profile p : listOfProfiles) {
+                int userID = p.getUserID();
+                int numFriends = p.getCountOfSomething();
+                System.out.format("| %-6d | %-"+ columnWidth +"d |%n", userID, numFriends);
+            }
+            System.out.println("+--------+----------------------+");
+            System.out.print("Press enter to return when you are done.");
+            scanner.nextLine();
+
+            return 1;
         }
         //end code for Rank Profiles -------------------------------------------------
 
 
 
         //code for Top Messages -------------------------------------------------
-        public static void startTopMessages() {
+        public static void startTopMessages() throws SQLException {
+            List<Integer> inputResults = getInputTopMessages();
+            topMessages(inputResults.get(0), inputResults.get(1));
+        }
+        public static List<Integer> getInputTopMessages(){
+            List<Integer> toReturn = new ArrayList<>();
+
+            System.out.println("To see the top \'k\' users with respect to the number of messages sent in past" +
+                    "\'x\' months. ");
+            System.out.println("");
+
+            try{
+                System.out.print("k: ");
+                int k = Integer.parseInt(scanner.nextLine());
+                toReturn.add(0,k);
+            }catch(NumberFormatException e){
+                System.out.println("You must enter a number k that represents how many users you want to see");
+            }
+
+            try{
+                System.out.print("x: ");
+                int x = Integer.parseInt(scanner.nextLine());
+                toReturn.add(1,x);
+            }catch(NumberFormatException e){
+                System.out.println("You must enter a number x that represents over how many months");
+            }
+
+            return toReturn;
         }
         //end code for Top Messages -------------------------------------------------
 
@@ -1591,7 +1703,6 @@ public class BeSocial{
         //code for Three Degrees -------------------------------------------------
         public static void startThreeDegrees() {
         }
-
         //end code for Three Degrees -------------------------------------------------
 
     }
