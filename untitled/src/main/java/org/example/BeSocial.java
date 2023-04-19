@@ -86,7 +86,6 @@ public class BeSocial{
                         Dashboard.startConfirmGroupMembership();
                         break;
                     case 8:
-                        System.out.println("You chose option 8: Leave Group");
                         Dashboard.startLeaveGroup();
                         break;
                     case 9:
@@ -397,7 +396,6 @@ public class BeSocial{
 
         return -1;
     }
-
     public static int confirmGroupMembership() throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -445,11 +443,37 @@ public class BeSocial{
         //TODO: handle "No groups are currently managed" should be displayed if the user is not a manager of any groups
         return 1;
     }
-    public static int leaveGroup(){
+    public static int leaveGroup(int gID) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("SELECT leaveGroup(?,?)");
+        callableStatement.setInt(1, gID);
+        callableStatement.setInt(2, currentAccount.getUserID());
+        ResultSet rs = callableStatement.executeQuery();
+        conn.close();
+
+        int affected=0;
+        if (rs.next()) {
+            affected = rs.getInt(1);
+        }
+
+        if(affected == 1){
+            System.out.println("You have left the group!");
+            return 1;
+        }else{
+            System.out.println("Not a Member of any Groups");
+        }
+
         return -1;
+
     }
 
+
+
+
     public static int searchForProfile(){
+
         return -1;
     }
     public static int sendMessageToUser(){
@@ -984,7 +1008,19 @@ public class BeSocial{
 
 
         //code for leave group -------------------------------------------------
-        public static void startLeaveGroup() {
+        public static void startLeaveGroup() throws SQLException {
+            leaveGroup(getGroupID());
+        }
+        private static int getGroupID(){
+            System.out.print("Enter the GroupID of the group you would like to leave.\nGroupID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int gID = Integer.parseInt(input);
+                return gID;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the GroupID of the group you would like to leave.");
+            }
+            return -1;
         }
         //end code for leave group -------------------------------------------------
 
