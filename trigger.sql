@@ -9,13 +9,24 @@ CREATE TRIGGER add_message_recipient
     FOR EACH ROW
 EXECUTE FUNCTION add_message_recipient();
 
+-- CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
+-- AS $$
+-- DECLARE
+--     group_id integer;
+-- BEGIN
+--     -- Insert the new message into the message table
+--     INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION add_message_recipient()
     RETURNS TRIGGER
 AS $$
 BEGIN
     IF(NEW.toGroupID is null)
     THEN
-        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.toUserID);
+        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.fromid);
         Return new;
     ELSE
 
@@ -456,19 +467,14 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 4 SendMessageToGroup
 -----------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
-    RETURNS BOOLEAN
+DROP PROCEDURE send_message_to_group;
+CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
 AS $$
 DECLARE
     group_id integer;
 BEGIN
     -- Insert the new message into the message table
     INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
-    RETURN true;
-EXCEPTION
-    WHEN others THEN
-        RETURN false;
 END;
 $$ LANGUAGE plpgsql;
 
