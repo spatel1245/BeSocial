@@ -108,8 +108,7 @@ public class BeSocial{
                         Dashboard.startDisplayFriends();
                         break;
                     case 15:
-                        System.out.println("You chose option 15: Rank Groups");
-                        // Code to rank groups
+                        Dashboard.startRankGroups();
                         break;
                     case 16:
                         System.out.println("You chose option 16: Rank Profiles");
@@ -686,15 +685,37 @@ public class BeSocial{
         }
 
         int responseCode = Dashboard.displayUsersFriends(friendslist);
-
         if(responseCode==-1){
             System.out.println("You don't have any friends.");
             return -1;
-        }else{
-            return 1;
         }
+
+        Dashboard.viewFriendsOrExit(friendslist);
+
+        return 1;
     }
-    public static int rankGroups(){
+    public static int rankGroups() throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM group_size_ranked()");
+        ResultSet rs = preparedStatement.executeQuery();
+
+        conn.close();
+
+        List<GroupProfile> listOfGroups = new ArrayList();
+
+        while(rs.next()){
+            GroupProfile g = new GroupProfile();
+            g.setgID(rs.getInt("group_id"));
+            g.setGroupSize(rs.getInt("total"));
+            listOfGroups.add(g);
+        }
+
+        int result = Dashboard.displayListOfGroups(listOfGroups);
+        if(result == -1){
+            System.out.println("There are no groups in the system.");
+        }
         return -1;
     }
 
@@ -929,6 +950,26 @@ public class BeSocial{
 
         public void setTimeSent(Date timeSent) {
             this.timeSent = timeSent;
+        }
+    }
+    public static class GroupProfile{
+        private int gID;
+        private int groupSize;
+
+        public int getgID() {
+            return gID;
+        }
+
+        public void setgID(int gID) {
+            this.gID = gID;
+        }
+
+        public int getGroupSize() {
+            return groupSize;
+        }
+
+        public void setGroupSize(int groupSize) {
+            this.groupSize = groupSize;
         }
     }
 
@@ -1435,17 +1476,100 @@ public class BeSocial{
                 System.out.format("| %-12d | %-24s |%n", friendID, name);
             }
             System.out.println("+--------------+--------------------------+");
-
-            System.out.print("Press enter when you are done viewing the results.");
-            scanner.nextLine();
+            System.out.println();
+            System.out.println("To view a friend's profile, enter their User ID\n" +
+                    "To return to the menu, enter \"EXIT\"");
             return 1;
+        }
+        public static void viewFriendsOrExit(List<Profile> friendList){
+            String input = scanner.nextLine();
+
+            if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")) {
+                return;
+            } else {
+                int status=1;
+                while(status!=-1) {
+                    try {
+                        if(status==2){
+                            displayUsersFriends(friendList);
+                            input = scanner.nextLine();
+                            if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")){
+                                return;
+                            }
+                        }
+                        int friendID = Integer.parseInt(input);
+                        status = viewFriendProfile(friendID);
+                    } catch (NumberFormatException | SQLException e) {
+                        System.out.println("You must either enter the User ID or \"EXIT\"!");
+                    }
+                }
+            }
+        }
+        public static int viewFriendProfile(int userID) throws SQLException {
+            String query = "SELECT * FROM profile WHERE userID = ?";
+
+            Connection conn = openConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM profile WHERE userID = ?");
+            preparedStatement.setInt(1, userID);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                // Print table header
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+                System.out.println("| User ID    | Name                 | Email                | Date of Birth        | Last Login    |");
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+
+                // Print profile data
+                int profileID = rs.getInt("userID");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                Date dob = rs.getDate("date_of_birth");
+                Timestamp lastLogin = rs.getTimestamp("lastLogin");
+
+                System.out.format("| %-10d | %-20s | %-20s | %-20s | %-14s |%n", profileID, name, email, dob, lastLogin);
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+            }
+
+            System.out.println("To return to the list, enter \"RETURN\"\n" +
+                            "To return to the main menu, enter \"QUIT\"");
+            try {
+                String input = scanner.nextLine();
+                if (input.equalsIgnoreCase("RETURN") || input.equalsIgnoreCase("r")) {
+                    return 2;
+                } else if (input.equalsIgnoreCase("QUIT") || input.equalsIgnoreCase("q")) {
+                    return -1;
+                }
+            }catch(Exception e){
+                System.out.println("Invalid input. Try Again");
+                System.out.println("To return to the list, enter \"RETURN\"\n" +
+                        "To return to the main menu, enter \"QUIT\"");
+            }
+            return -1;
         }
         //end code for Display Friends -------------------------------------------------
 
 
 
         //code for Rank Groups -------------------------------------------------
-        public static void startRankGroups() {
+        public static void startRankGroups() throws SQLException {
+            rankGroups();
+        }
+        public static int displayListOfGroups(List<GroupProfile> listOfGroups) {
+            if (listOfGroups.size() == 0) return -1;
+
+            System.out.println("+--------+--------------------+");
+            System.out.println("| GroupID| Num Members        |");
+            System.out.println("+--------+--------------------+");
+            for (GroupProfile p : listOfGroups) {
+                int gID = p.getgID();
+                int groupSize = p.getGroupSize();
+                System.out.format("| %-6d | %-18d |%n", gID, groupSize);
+            }
+            System.out.println("+--------+--------------------+");
+            System.out.print("Press enter to return when you are done.");
+            scanner.nextLine();
+
+            return 1;
         }
         //end code for Rank Groups -------------------------------------------------
 
