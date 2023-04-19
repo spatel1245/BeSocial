@@ -260,6 +260,22 @@ $$ LANGUAGE plpgsql;
 --END PROCEDURE 2 add_select_friend_reqs
 -----------------------------------------------------------------
 
+--
+-- CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
+-- AS $$
+-- DECLARE
+--     i integer;
+-- BEGIN
+--     FOR i IN 1..array_length(userID_list, 1) LOOP
+--             INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], NOW());
+--     END LOOP;
+--     DELETE FROM pendingfriend WHERE userID2 = current_userID;
+--
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+
+
 
 -----------------------------------------------------------------
 --BEGIN PROCEDURE 3 createPendingGroupMembers
@@ -332,19 +348,29 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN PROCEDURE 6 searchForProfile
 -----------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
+-- CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
+-- AS $$
+-- DECLARE
+-- BEGIN
+--     RETURN QUERY(SELECT * FROM profile WHERE name LIKE '%userName%');
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END PROCEDURE 6 confirmGroupMembers
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 7 searchForProfile
+-----------------------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE update_last_login(p_userID INTEGER)
+LANGUAGE plpgsql
 AS $$
-DECLARE
-
 BEGIN
-    SELECT profile.name,
-     SUBSTRING (profile.name,length(userName)) as subName
-
-    FROM profile
-    WHERE subName=
-
+  UPDATE profile SET lastLogin = NOW() WHERE userID = p_userID;
 END;
-$$ LANGUAGE plpgsql;
-
-
-
+$$;
+-----------------------------------------------------------------
+--END PROCEDURE 6 confirmGroupMembers
+-----------------------------------------------------------------
