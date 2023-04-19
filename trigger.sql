@@ -343,23 +343,7 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---BEGIN PROCEDURE 6 searchForProfile
------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
-AS $$
-DECLARE
-BEGIN
-    (SELECT * FROM profile WHERE userName=profile.name);
-END;
-$$ LANGUAGE plpgsql;
-
-call searchFor('Kathleen','bez@gmail.com');
------------------------------------------------------------------
---END PROCEDURE 6 confirmGroupMembers
------------------------------------------------------------------
-
------------------------------------------------------------------
---BEGIN PROCEDURE 7 searchForProfile
+--BEGIN PROCEDURE 6 update_last_login
 -----------------------------------------------------------------
 
 CREATE OR REPLACE PROCEDURE update_last_login(p_userID INTEGER)
@@ -370,7 +354,7 @@ BEGIN
 END;
 $$;
 -----------------------------------------------------------------
---END PROCEDURE 7 confirmGroupMembers
+--END PROCEDURE 6 update_last_login
 -----------------------------------------------------------------
 
 
@@ -424,7 +408,7 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 2 searchProfiles
 -----------------------------------------------------------------
-DROP FUNCTION IF EXISTS get_pending_members(user_id INTEGER);
+
 --
 -- DROP VIEW IF EXISTS searched;
 --
