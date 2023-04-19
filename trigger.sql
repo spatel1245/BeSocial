@@ -415,29 +415,169 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 2 searchProfiles
 -----------------------------------------------------------------
+DROP FUNCTION IF EXISTS search_user_profiles(search_strings TEXT[]);
 
---
--- DROP VIEW IF EXISTS searched;
---
--- CREATE OR REPLACE VIEW searched AS
---              SELECT name
---              FROM profile
---              WHERE profile.name = ' || p_name ||';
---
---
---
--- CREATE OR REPLACE FUNCTION searchProfiles(p_name varchar(50), email varchar(50))
---     RETURNS SETOF profile AS $$
--- BEGIN
---     EXECUTE 'CREATE OR REPLACE VIEW searched AS
---              SELECT name
---              FROM profile
---              WHERE profile.name = ' || p_name ||';';
---     RETURN QUERY SELECT * FROM searched;
--- END;
--- $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION search_user_profiles(substringList TEXT[])
+RETURNS TABLE (userID INTEGER, name VARCHAR(50)) AS $$
+
+DECLARE
+    combinedSearchQuery TEXT;
+    i INTEGER;
+BEGIN
+    combinedSearchQuery := 'SELECT userID, name FROM profile WHERE';
+    FOR i IN 1..array_length(substringList, 1) LOOP
+            combinedSearchQuery := combinedSearchQuery || ' profile.name LIKE ''%' || substringList[i] ||
+                                   '%'' OR profile.email LIKE ''%' || substringList[i] || '%''';
+            IF i <> array_length(substringList, 1) THEN
+                combinedSearchQuery := combinedSearchQuery || ' OR';
+            END IF;
+    END LOOP;
+    RETURN QUERY EXECUTE combinedSearchQuery;
+END;
+$$ LANGUAGE plpgsql;
 
 
 -----------------------------------------------------------------
 --END FUNCTION 2 SEARCH PROFILES
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 3 sendMessageToFriend
+-----------------------------------------------------------------
+CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body varchar(200))
+    RETURNS BOOLEAN
+AS $$
+BEGIN
+    -- Insert the new message into the message table
+    INSERT INTO message VALUES (default, user_id, message_body, friend_id, NULL, NOW()); -- will implicitly call add_message_recipient()
+    RETURN true;
+EXCEPTION
+    WHEN others THEN
+        RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-----------------------------------------------------------------
+--END FUNCTION 3 SendMessageToFriend
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 4 SendMessageToGroup
+-----------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
+    RETURNS BOOLEAN
+AS $$
+BEGIN
+    -- Insert the new message into the message table
+    INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
+    RETURN true;
+EXCEPTION
+    WHEN others THEN
+        RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 4 SendMessageToGroup
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 5 displayFriends
+-----------------------------------------------------------------
+
+CREATE OR REPLACE VIEW friend_display
+    AS
+             SELECT
+                    userid2,
+                    profile.name
+             FROM friend
+             INNER JOIN profile ON friend.userID2=profile.userID;
+
+CREATE OR REPLACE FUNCTION displayFriends(userid integer)
+    RETURNS SETOF friend AS $$
+BEGIN
+    EXECUTE 'CREATE OR REPLACE VIEW friend_display AS
+             SELECT userid2, profile.name
+             FROM friend
+             INNER JOIN profile ON friend.userID2=profile.userID
+            WHERE userid1 = ' || userid||';';
+    RETURN QUERY SELECT * FROM friend_display;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 5 displayFriends
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 6 Detail_friend
+-----------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION displayDetailFriend(user_id integer)
+    RETURNS SETOF profile AS $$
+BEGIN
+
+    RETURN QUERY SELECT * FROM profile Where user_id=profile.userid;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 6 Detail_friend
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 7 Return Ranked Groups
+-----------------------------------------------------------------
+CREATE OR REPLACE VIEW groups_size_ranked
+    AS
+            SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
+
+CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
+    RETURNS SETOF groupinfo AS $$
+BEGIN
+     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
+            SELECT COUNT(userID), groupmember.gid
+            FROM groupmember
+            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY gid
+            ORDER BY COUNT(groupmember.userID) DESC;';
+    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 7 Return Ranked Groups
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--START  FUNCTION 8 Return Ranked Friends
+-----------------------------------------------------------------
+CREATE OR REPLACE VIEW groups_size_ranked
+    AS
+            SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
+
+CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
+    RETURNS SETOF groupinfo AS $$
+BEGIN
+     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
+            SELECT COUNT(userID), groupmember.gid
+            FROM groupmember
+            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY gid
+            ORDER BY COUNT(groupmember.userID) DESC;';
+    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+-----------------------------------------------------------------
+--END FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
