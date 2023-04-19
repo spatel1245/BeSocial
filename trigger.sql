@@ -64,7 +64,7 @@ BEGIN
         FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid
             LOOP
                 SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
---         INSERT INTO messagerecipient VALUES (sizelimit, cursize);
+
                 if(curSize<sizelimit) THEN
                     INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
                     DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
@@ -363,7 +363,14 @@ $$;
 -----------------------------------------------------------------
 --END PROCEDURE 6 update_last_login
 -----------------------------------------------------------------
+-----------------------------------------------------------------
+--BEGIN PROCEDURE 7 sendMessage
+-----------------------------------------------------------------
 
+
+-----------------------------------------------------------------
+--END PROCEDURE 7 sendMessage
+-----------------------------------------------------------------
 
 
 -----------------------------------------------------------------
@@ -447,9 +454,19 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body varchar(200))
     RETURNS BOOLEAN
 AS $$
+
+DECLARE
+    msg_id integer;
 BEGIN
     -- Insert the new message into the message table
     INSERT INTO message VALUES (default, user_id, message_body, friend_id, NULL, NOW()); -- will implicitly call add_message_recipient()
+
+    SELECT last_value(msg_id)
+           OVER (ORDER BY msg_id ASC
+               RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+    INTO msg_id
+    FROM message;
+    INSERT INTO messagerecipient VALUES (msg_id, friend_id);
     RETURN true;
 EXCEPTION
     WHEN others THEN
@@ -469,6 +486,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
     RETURNS BOOLEAN
 AS $$
+DECLARE
+    group_id integer;
 BEGIN
     -- Insert the new message into the message table
     INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
@@ -489,9 +508,8 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE VIEW friend_display
     AS
-             SELECT
-                    userid2,
-                    profile.name
+             SELECT userid2,
+            profile.name
              FROM friend
              INNER JOIN profile ON friend.userID2=profile.userID;
 
@@ -558,26 +576,31 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --START  FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
-CREATE OR REPLACE VIEW groups_size_ranked
-    AS
-            SELECT COUNT(userID), groupinfo.gid
-            FROM groupmember
-            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY groupinfo.gid
-            ORDER BY COUNT(userID) DESC;
-
-CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
-    RETURNS SETOF groupinfo AS $$
-BEGIN
-     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
-            SELECT COUNT(userID), groupmember.gid
-            FROM groupmember
-            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY gid
-            ORDER BY COUNT(groupmember.userID) DESC;';
-    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
-END;
-$$ LANGUAGE plpgsql;
------------------------------------------------------------------
+-- CREATE OR REPLACE VIEW rank_friends
+-- AS
+-- select user, count(*) Total
+-- from
+-- (
+--   select userid1 as user
+--   from friend as
+--   union all
+--   select userid2 as user
+--   from friend
+-- )
+-- group by user
+-- order by total desc;
+-- CREATE OR REPLACE FUNCTION rank_friends(user_id integer)
+--     RETURNS SETOF groupinfo AS $$
+-- BEGIN
+--      EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
+--             SELECT COUNT(userID), groupmember.gid
+--             FROM groupmember
+--             INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
+--             GROUP BY gid
+--             ORDER BY COUNT(groupmember.userID) DESC;';
+--     RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+-- END;
+-- $$ LANGUAGE plpgsql;
+-- -----------------------------------------------------------------
 --END FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
