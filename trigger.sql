@@ -16,8 +16,6 @@ CREATE OR REPLACE FUNCTION add_message_recipient()
     DECLARE
         report  TEXT DEFAULT '';
         rec_group RECORD;
-
-
     BEGIN
     FOR rec_group IN SELECT userId,gid FROM groupmember WHERE groupmember.gid=new.togroupid
     LOOP
@@ -36,11 +34,11 @@ END
  $$ LANGUAGE plpgsql;
 
 
-DROP TRIGGER if EXISTS add_message_recipient on message;
- CREATE TRIGGER add_message_recipient
- AFTER INSERT ON message
- FOR EACH ROW
- EXECUTE FUNCTION add_message_recipient();
+-- DROP TRIGGER if EXISTS add_message_recipient on message;
+--  CREATE TRIGGER add_message_recipient
+--  AFTER INSERT ON message
+--  FOR EACH ROW
+--  EXECUTE FUNCTION add_message_recipient();
 ------------------------------------------------------------
 --END of TRIGGER 1
 -----------------------------------------------------------
@@ -51,49 +49,84 @@ DROP TRIGGER if EXISTS add_message_recipient on message;
 -----------------------------------------------------------------
 --TRIGGER 2 updateGroup
 -----------------------------------------------------------------
-CREATE OR REPLACE FUNCTION updateGroup()
-RETURNS TRIGGER
- AS $$
-
---Should we assume that he was already excepted
- BEGIN
-     DECLARE
-        report  TEXT DEFAULT '';
-        rec_updateGroup RECORD;
-        cur_updateGroup CURSOR
-            FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
-        rec_groupSelected RECORD;
-        sizelimit integer;
-        sizeGroup integer;
-    BEGIN
-    SELECT COUNT(gid) INTO sizeGroup FROM groupmember WHERE old.gid = gid;
-        IF(sizeGroup<rec_groupSelected.size) THEN
-            OPEN cur_updateGroup;
-            fetch cur_updateGroup into rec_updateGroup;
-            INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
-            DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
-            CLOSE cur_updateGroup;
-         end if;
-
-        return new;
-    END;
-    END
-
-
- $$ LANGUAGE plpgsql;
-
-
- DROP TRIGGER if EXISTS updateGroup on groupmember;
-
- CREATE TRIGGER updateGroup
- AFTER DELETE ON groupmember
- FOR EACH ROW
- EXECUTE FUNCTION updateGroup();
+-- CREATE OR REPLACE FUNCTION updateGroup()
+-- RETURNS TRIGGER
+--  AS $$
+--
+-- --Should we assume that he was already excepted
+--  BEGIN
+--      DECLARE
+--         report  TEXT DEFAULT '';
+--         rec_updateGroup RECORD;
+--         cur_updateGroup CURSOR
+--             FOR SELECT gID, userID, requesttext, requesttime FROM pendinggroupmember ORDER BY requesttime ASC;
+--         rec_groupSelected RECORD;
+--         sizelimit integer;
+--         sizeGroup integer;
+--     BEGIN
+--     SELECT COUNT(gid) INTO sizeGroup FROM groupmember WHERE old.gid = gid;
+--         IF(sizeGroup<rec_groupSelected.size) THEN
+--             OPEN cur_updateGroup;
+--             fetch cur_updateGroup into rec_updateGroup;
+--             INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
+--             DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
+--             CLOSE cur_updateGroup;
+--          end if;
+--
+--         return new;
+--     END;
+--     END
+--
+--
+--  $$ LANGUAGE plpgsql;
+--
+--
+--  DROP TRIGGER if EXISTS updateGroup on groupmember;
+--
+--  CREATE TRIGGER updateGroup
+--  AFTER DELETE ON groupmember
+--  FOR EACH ROW
+--  EXECUTE FUNCTION updateGroup();
 
 -----------------------------------------------------------------
 --TRIGGER 2  END updateGroup
 -----------------------------------------------------------------
+CREATE OR REPLACE FUNCTION updateGroup()
+RETURNS TRIGGER
+ AS $$
+BEGIN
 
+    DECLARE
+     rec_updateGroup RECORD;
+     rec_groupSelected RECORD;
+     sizelimit integer;
+     curSize integer;
+
+    BEGIN
+    SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
+
+    FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid
+    LOOP
+        SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
+--         INSERT INTO messagerecipient VALUES (sizelimit, cursize);
+         if(curSize<sizelimit) THEN
+            INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
+            DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
+        SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
+           SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
+         end if;
+    end loop;
+
+    Return old;
+    end;--
+END
+ $$ LANGUAGE plpgsql;
+
+  DROP TRIGGER if EXISTS updateGroup on groupmember;
+  CREATE TRIGGER updateGroup
+  AFTER DELETE ON groupmember
+  FOR EACH ROW
+ EXECUTE FUNCTION updateGroup();
 
 -----------------------------------------------------------------
 --TRIGGER 3 delete_pending_friendRequest
