@@ -86,7 +86,7 @@ CREATE TABLE  pendingGroupMember
 
 CREATE TABLE message
 (
-    msgID INTEGER NOT NULL,
+    msgID SERIAL NOT NULL,
     fromID INTEGER NOT NULL, -- Assume that message must be sent from a user.
     messageBody VARCHAR(200) NOT NULL, --Assume that message cannot be null or empty
     toUserID INTEGER DEFAULT NULL, --Assume that a toUSerId may be null the groupID is not null.
@@ -101,7 +101,7 @@ CREATE TABLE message
 
 CREATE TABLE messageRecipient
 (
-    msgID INTEGER NOT NULL, --Assume that message Id cannot be null in order for a messageRecipient to exist a message must have been received
+    msgID SERIAL NOT NULL, --Assume that message Id cannot be null in order for a messageRecipient to exist a message must have been received
     userID INTEGER NOT NULL, --Assume that the userId cannot be null since in order for a messageRecipient to exist some profile must have received the message
 
     CONSTRAINT PK_messageRecipient PRIMARY KEY  (msgId, userID), -- Both the msgID and userID are the primary key as in order to uniquely identify who the recipient of a message is, we must know the user (identified by userID) and the message they receive (messageID)
