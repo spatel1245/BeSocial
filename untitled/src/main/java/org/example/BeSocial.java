@@ -10,7 +10,7 @@ public class BeSocial{
 
     private static final String url = "jdbc:postgresql://localhost:5432/";
     private static final String user = "postgres";
-    private static final String pass = "PASSWORD";
+    private static final String pass = "4qwkzaaw";
     public static Profile currentAccount = null;
 
     public static void main(String[] args) throws SQLException {
@@ -93,8 +93,7 @@ public class BeSocial{
                         Dashboard.startSearchForProfile();
                         break;
                     case 10:
-                        System.out.println("You chose option 10: Send Message to User");
-                        // Code to send a message to a user
+                        Dashboard.startSendMessageToUser();
                         break;
                     case 11:
                         System.out.println("You chose option 11: Send Message to Group");
@@ -503,8 +502,56 @@ public class BeSocial{
         return -1;
     }
 
-    public static int sendMessageToUser(){
-        return -1;
+    public static int sendMessageToUser(int userId) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, userId);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        int friends=0;
+        if (rs.next()) {
+            friends = rs.getInt(1);
+            if(friends==-1){
+                System.out.println("You are not friends with this user.");
+                return -1;
+            }
+        }
+
+        conn = openConnection();
+        preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+                "userID=?");
+        preparedStatement.setInt(1, userId);
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        String name = null;
+        if (response.next()){
+            name = response.getString("name");
+            String message = Dashboard.sendMessageInput(name);
+
+            if(message!=null){
+                conn = openConnection();
+                CallableStatement callableStatement = conn.prepareCall("call send_message_to_friend(?,?,?)");
+                callableStatement.setInt(1, currentAccount.getUserID());
+                callableStatement.setInt(2, userId);
+                callableStatement.setString(3, message);
+                callableStatement.executeUpdate();
+                conn.close();
+
+                System.out.println("Your message was sent.");
+                return 1;
+            }
+            System.out.println("Message not sent.");
+            return -1;
+        }else{
+            System.out.println("That userID wasn't found. Message send failed.");
+            return -1;
+        }
+
     }
 
     public static int sendMessageToGroup(){
@@ -1085,7 +1132,33 @@ public class BeSocial{
 
 
         //code for send Message To User -------------------------------------------------
-        public static void startSendMessageToUser() {
+        public static void startSendMessageToUser() throws SQLException {
+            sendMessageToUser(getRecipUserID());
+        }
+        private static int getRecipUserID(){
+            System.out.print("Enter the UserID of the person you would like send a message to.\nUserID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int userID = Integer.parseInt(input);
+                return userID;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the UserID of the person you would like send a message to.");
+            }
+            return -1;
+        }
+
+        public static String sendMessageInput(String name) {
+            System.out.printf("You are sending a message to %s. Enter your message below.\n", name);
+            System.out.print("Message: ");
+            String message = scanner.nextLine();
+            System.out.println("\n");
+            System.out.printf("Are you sure you want to send this message to %s? (Y/N)\n", name);
+            char response = scanner.nextLine().toLowerCase().trim().charAt(0);
+            if(response == 'y'){
+                return message;
+            }else{
+                return null;
+            }
         }
         //end code for send Message To User -------------------------------------------------
 
@@ -1145,6 +1218,7 @@ public class BeSocial{
         //code for Three Degrees -------------------------------------------------
         public static void startThreeDegrees() {
         }
+
         //end code for Three Degrees -------------------------------------------------
 
     }
