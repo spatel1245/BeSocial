@@ -29,23 +29,15 @@ public class BeSocial{
                 System.out.print("Selecting option: ");
                 int choice = scanner.nextInt();
                 switch (choice) {
-                    case 1:
-                        Dashboard.startCreateProfile();
-                        break;
-                    case 2:
-                        Dashboard.startDropProfile();
-                        break;
-                    case 3:
-                        Dashboard.startLogin();
-                        break;
-                    case 4:
+                    case 1 -> Dashboard.startCreateProfile();
+                    case 2 -> Dashboard.startDropProfile();
+                    case 3 -> Dashboard.startLogin();
+                    case 4 -> {
                         exit();
                         Dashboard.scanner.close();
                         quit = true;
-                        break;
-                    default:
-                        System.out.println("Invalid choice, please try again");
-                        break;
+                    }
+                    default -> System.out.println("Invalid choice, please try again");
                 }
             }else if(currentAccount!=null) {
                 System.out.printf("Welcome, %s\n\n", currentAccount.getName());
@@ -57,98 +49,88 @@ public class BeSocial{
                 System.out.println("6. Initiate Adding Group");
                 System.out.println("7. Confirm Group Membership");
                 System.out.println("8. Leave Group");
-                System.out.println("8. Search for Profile");
-                System.out.println("9. Send Message to User");
-                System.out.println("10. Send Message to Group");
-                System.out.println("11. Display Messages");
-                System.out.println("12. Display New Messages");
-                System.out.println("13. Display Friends");
-                System.out.println("14. Rank Groups");
-                System.out.println("15. Rank Profiles");
-                System.out.println("16. Top Messages");
-                System.out.println("17. Three Degrees");
-                System.out.println("18. Logout");
-                System.out.println("19. Exit");
+                System.out.println("9. Search for Profile");
+                System.out.println("10. Send Message to User");
+                System.out.println("11. Send Message to Group");
+                System.out.println("12. Display Messages");
+                System.out.println("13. Display New Messages");
+                System.out.println("14. Display Friends");
+                System.out.println("15. Rank Groups");
+                System.out.println("16. Rank Profiles");
+                System.out.println("17. Top Messages");
+                System.out.println("18. Three Degrees");
+                System.out.println("19. Logout");
+                System.out.println("20. Exit");
                 System.out.print("Selecting option: ");
                 int choice = scanner.nextInt();
                 switch (choice) {
                     case 1:
-                        System.out.println("You chose option 1: Create Profile");
                         Dashboard.startCreateProfile();
-                        // Code to create a new profile
                         break;
                     case 2:
-                        System.out.println("You chose option 2: Drop Profile");
                         Dashboard.startDropProfile();
-                        // Code to drop a profile
                         break;
                     case 3:
                         Dashboard.startInitiateFriendship();
                         break;
                     case 4:
                         Dashboard.startConfirmFriendRequest();
-
-                        // Code to confirm friend requests
                         break;
                     case 5:
-                        System.out.println("You chose option 5: Create Group");
                         Dashboard.startCreateGroup();
                         break;
                     case 6:
-                        System.out.println("You chose option 6: Initiate Adding Group");
                         Dashboard.startInitiateAddingGroup();
                         break;
                     case 7:
-                        System.out.println("You chose option 7: Confirm Group Membership");
                         Dashboard.startConfirmGroupMembership();
                         break;
-//                    case 7:
-//                        System.out.println("You chose option 7: Leave Group");
-//                        // Code to leave a group
-//                        break;
                     case 8:
-                        System.out.println("You chose option 8: Search for Profile");
-                        // Code to search for a profile
+                        Dashboard.startLeaveGroup();
                         break;
                     case 9:
-                        System.out.println("You chose option 9: Send Message to User");
-                        // Code to send a message to a user
+                        System.out.println("You chose option 9: Search for Profile");
+                        // Code to search for a profile
                         break;
                     case 10:
-                        System.out.println("You chose option 10: Send Message to Group");
-                        // Code to send a message to a group
+                        System.out.println("You chose option 10: Send Message to User");
+                        // Code to send a message to a user
                         break;
                     case 11:
-                        System.out.println("You chose option 11: Display Messages");
-                        // Code to display messages
+                        System.out.println("You chose option 11: Send Message to Group");
+                        // Code to send a message to a group
                         break;
                     case 12:
-                        System.out.println("You chose option 12: Display New Messages");
-                        // Code to display new messages
+                        System.out.println("You chose option 12: Display Messages");
+                        // Code to display messages
                         break;
                     case 13:
-                        System.out.println("You chose option 13: Display Friends");
-                        // Code to display friends
+                        System.out.println("You chose option 13: Display New Messages");
+                        // Code to display new messages
                         break;
                     case 14:
-                        System.out.println("You chose option 14: Rank Groups");
-                        // Code to rank groups
+                        System.out.println("You chose option 14: Display Friends");
+                        // Code to display friends
                         break;
                     case 15:
-                        System.out.println("You chose option 15: Rank Profiles");
-                        // Code to rank profiles
+                        System.out.println("You chose option 15: Rank Groups");
+                        // Code to rank groups
                         break;
                     case 16:
-                        System.out.println("You chose option 16: Top Messages");
-                        // Code to display top messages
+                        System.out.println("You chose option 16: Rank Profiles");
+                        // Code to rank profiles
                         break;
                     case 17:
-                        System.out.println("You chose option 17: Three Degrees");
+                        System.out.println("You chose option 17: Top Messages");
+                        // Code to display top messages
+                        break;
                     case 18:
+                        System.out.println("You chose option 18: Three Degrees");
+                    case 19:
                         logout();
                         System.out.printf("\n\n\n\n\n\n\n\n");
                         break;
-                    case 19:
+                    case 20:
                         System.out.printf("Thanks for visiting, %s\n", exit());
                         Dashboard.scanner.close();
                         quit = true;
@@ -414,7 +396,6 @@ public class BeSocial{
 
         return -1;
     }
-
     public static int confirmGroupMembership() throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -462,11 +443,37 @@ public class BeSocial{
         //TODO: handle "No groups are currently managed" should be displayed if the user is not a manager of any groups
         return 1;
     }
-    public static int leaveGroup(){
+    public static int leaveGroup(int gID) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("SELECT leaveGroup(?,?)");
+        callableStatement.setInt(1, gID);
+        callableStatement.setInt(2, currentAccount.getUserID());
+        ResultSet rs = callableStatement.executeQuery();
+        conn.close();
+
+        int affected=0;
+        if (rs.next()) {
+            affected = rs.getInt(1);
+        }
+
+        if(affected == 1){
+            System.out.println("You have left the group!");
+            return 1;
+        }else{
+            System.out.println("Not a Member of any Groups");
+        }
+
         return -1;
+
     }
 
+
+
+
     public static int searchForProfile(){
+
         return -1;
     }
     public static int sendMessageToUser(){
@@ -997,6 +1004,97 @@ public class BeSocial{
             return newList;
         }
         //end code for confirm group member-------------------------------------------------
+
+
+
+        //code for leave group -------------------------------------------------
+        public static void startLeaveGroup() throws SQLException {
+            leaveGroup(getGroupID());
+        }
+        private static int getGroupID(){
+            System.out.print("Enter the GroupID of the group you would like to leave.\nGroupID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int gID = Integer.parseInt(input);
+                return gID;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the GroupID of the group you would like to leave.");
+            }
+            return -1;
+        }
+        //end code for leave group -------------------------------------------------
+
+
+
+        //code for search for profile -------------------------------------------------
+        public static void startSearchForProfile() {
+        }
+        //end code for search for profile -------------------------------------------------
+
+
+
+        //code for send Message To User -------------------------------------------------
+        public static void startSendMessageToUser() {
+        }
+        //end code for send Message To User -------------------------------------------------
+
+
+
+        //code for send Message To Group -------------------------------------------------
+        public static void startSendMessageToGroup() {
+        }
+        //end code for send Message To Group -------------------------------------------------
+
+
+
+        //code for Display Messages -------------------------------------------------
+        public static void startDisplayMessages() {
+        }
+        //end code for Display Messages -------------------------------------------------
+
+
+
+        //code for Display New Messages -------------------------------------------------
+        public static void startDisplayNewMessages() {
+        }
+        //end code for Display New Messages -------------------------------------------------
+
+
+
+        //code for Display Friends -------------------------------------------------
+        public static void startDisplayFriends() {
+        }
+        //end code for Display Friends -------------------------------------------------
+
+
+
+        //code for Rank Groups -------------------------------------------------
+        public static void startRankGroups() {
+        }
+        //end code for Rank Groups -------------------------------------------------
+
+
+
+
+        //code for Rank Profiles -------------------------------------------------
+        public static void startRankProfiles() {
+        }
+        //end code for Rank Profiles -------------------------------------------------
+
+
+
+        //code for Top Messages -------------------------------------------------
+        public static void startTopMessages() {
+        }
+        //end code for Top Messages -------------------------------------------------
+
+
+
+
+        //code for Three Degrees -------------------------------------------------
+        public static void startThreeDegrees() {
+        }
+        //end code for Three Degrees -------------------------------------------------
 
     }
 }

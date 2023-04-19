@@ -326,20 +326,27 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---Begin PROCEDURE 5 leaveGroup
+--Begin FUNCTION 5 leaveGroup
 -----------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE leaveGroup(group_id integer,user_id integer)
-AS $$
+CREATE OR REPLACE FUNCTION leaveGroup(group_id integer, user_id integer)
+RETURNS integer AS $$
 DECLARE
+    match_found integer;
 BEGIN
     DELETE FROM groupmember
+    WHERE groupmember.gid = group_id AND groupmember.userid = user_id
+    RETURNING 1 INTO match_found;
 
-    WHERE gid=group_id AND user_id=userid;
+    IF FOUND THEN
+        RETURN match_found;
+    ELSE
+        RETURN -1;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
---END PROCEDURE 5 confirmGroupMembers
+--END FUNCTION 5 confirmGroupMembers
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
@@ -374,11 +381,11 @@ $$;
 
 DROP VIEW IF EXISTS group_reqs_to_accept;
 
--- CREATE VIEW group_reqs_to_accept AS
--- SELECT p.*
--- FROM pendingGroupMember p
---          JOIN groupMember g ON p.gID = g.gID
--- WHERE p.userID = 0 AND g.role = 'manager';
+CREATE VIEW group_reqs_to_accept AS
+SELECT p.*
+FROM pendingGroupMember p
+         JOIN groupMember g ON p.gID = g.gID
+WHERE p.userID = 0 AND g.role = 'manager';
 
 DROP FUNCTION IF EXISTS get_pending_members(user_id INTEGER);
 
