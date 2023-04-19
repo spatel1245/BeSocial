@@ -360,7 +360,7 @@ DELETE FROM profile
 Delete FROM profile Where userid=6;
 
 
-INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', 1, NULL, '2022-04-20T09:23:35');
+INSERT INTO message VALUES (1, 13, 'Analysis although hit yard.', NULL, 1, '2022-04-20T09:23:35');
 INSERT INTO message VALUES (2, 68, 'Charge talk improve learn say determine.', 6, NULL,'2022-10-06T18:15:26');
 INSERT INTO message VALUES (3, 78, 'East day deep smile second until.', 6, NULL, '2022-10-14T18:46:58');
 
