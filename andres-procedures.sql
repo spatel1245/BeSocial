@@ -6,6 +6,8 @@
 -- should be auto-generated and timeSent should be set to the current time of the Clocktable)
 -- and use a trigger to add a corresponding entry into the messageRecipient relation. The user
 -- should lastly be shown success or failure feedback.
+
+-- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION FIXED
 DROP FUNCTION IF EXISTS send_message_to_friend(integer, integer, text);
 
 CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body TEXT)
@@ -36,6 +38,12 @@ $$ LANGUAGE plpgsql;
 -- to put the group ID to ToGroupID in the table of message and use a trigger to populate
 -- the messageRecipient table with proper user ID information as defined by the groupMember
 -- relation.
+
+--------
+
+-- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION
+
+-------------
 
 -- 13.displayMessages
 -- When the user selects this option, the entire contents
