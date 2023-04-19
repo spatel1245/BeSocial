@@ -171,19 +171,19 @@ AS $$
 DECLARE
     group_id integer;
 BEGIN
-    SELECT last_value(gid)
-    OVER (ORDER BY gid ASC
-       RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-       INTO group_id
-    FROM groupinfo;
-INSERT INTO groupinfo VALUES (group_id+1, name, size, description);
 
-    INSERT INTO groupmember VALUES (group_id+1, userid, 'manager', now());
+    INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
+    SELECT last_value(gid)
+           OVER (ORDER BY gid ASC
+               RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+    INTO group_id
+    FROM groupinfo;
+
+    INSERT INTO groupmember VALUES (group_id, userid, 'manager', now());
 
 END;
 $$ LANGUAGE plpgsql;
 
-call creategroup('Ben', 5, 'hello',1);
 
 
 CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userID_list integer[])
@@ -197,6 +197,33 @@ BEGIN
     END LOOP;
 
         DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
+    --add code to remove all entires in pendingFriend relation where ID2 == current_userID
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
+AS $$
+DECLARE
+BEGIN
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, now());
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE PROCEDURE confirmGroupMembers(group_id integer, pendingMember_list integer[])
+AS $$
+DECLARE
+    i integer;
+BEGIN
+    FOR i IN 1..array_length(pendingMember_list, 1) LOOP
+            --write the code that will insert into friends all current_userID & userID_list
+
+            INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
+        END LOOP;
+
+
+    DELETE FROM pendinggroupmember WHERE pendinggroupmember.gid = group_id;
     --add code to remove all entires in pendingFriend relation where ID2 == current_userID
 END;
 $$ LANGUAGE plpgsql;

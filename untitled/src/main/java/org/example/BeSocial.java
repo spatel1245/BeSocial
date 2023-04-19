@@ -1,12 +1,9 @@
 package org.example;
 
-import org.postgresql.jdbc2.ArrayAssistant;
-
+import javax.swing.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.sql.Date;
+import java.util.*;
 
 public class BeSocial{
 
@@ -43,6 +40,7 @@ public class BeSocial{
                         break;
                     case 4:
                         exit();
+                        Dashboard.scanner.close();
                         quit = true;
                         break;
                     default:
@@ -57,7 +55,8 @@ public class BeSocial{
                 System.out.println("4. Confirm Friend Request(s)");
                 System.out.println("5. Create Group");
                 System.out.println("6. Initiate Adding Group");
-                System.out.println("7. Leave Group");
+                System.out.println("7. Confirm Group Membership");
+                System.out.println("8. Leave Group");
                 System.out.println("8. Search for Profile");
                 System.out.println("9. Send Message to User");
                 System.out.println("10. Send Message to Group");
@@ -97,12 +96,16 @@ public class BeSocial{
                         break;
                     case 6:
                         System.out.println("You chose option 6: Initiate Adding Group");
-                        // Code to initiate adding a group
+                        Dashboard.startInitiateAddingGroup();
                         break;
                     case 7:
-                        System.out.println("You chose option 7: Leave Group");
-                        // Code to leave a group
+                        System.out.println("You chose option 7: Confirm Group Membership");
+                        Dashboard.startConfirmGroupMembership();
                         break;
+//                    case 7:
+//                        System.out.println("You chose option 7: Leave Group");
+//                        // Code to leave a group
+//                        break;
                     case 8:
                         System.out.println("You chose option 8: Search for Profile");
                         // Code to search for a profile
@@ -147,6 +150,7 @@ public class BeSocial{
                         break;
                     case 19:
                         System.out.printf("Thanks for visiting, %s\n", exit());
+                        Dashboard.scanner.close();
                         quit = true;
                         break;
                     default:
@@ -395,12 +399,68 @@ public class BeSocial{
 
         return 1;
     }
-    public static int initiateAddingGroup(){
+    public static int initiateAddingGroup(int groupID, String requestText) throws SQLException{
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        CallableStatement callableStatement = conn.prepareCall("call createPendingGroupMember(?,?,?)");
+        callableStatement.setInt(1, groupID);
+        callableStatement.setInt(2, currentAccount.getUserID());
+        callableStatement.setString(3, requestText);
+        callableStatement.execute();
+        conn.close();
+
+        System.out.println("Your request to join the group was sent!");
+
         return -1;
     }
 
-    public static int confirmGroupMembership(){
-        return -1;
+    public static int confirmGroupMembership() throws SQLException {
+        if(currentAccount==null) return -1;
+
+       Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM get_pending_members(?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        conn.close();
+
+        List<GroupRequest> groupRequestList = new ArrayList<>();
+        while(resultSet.next()){
+            GroupRequest groupRequest = new GroupRequest();
+            groupRequest.setgID(resultSet.getInt("gID"));
+            groupRequest.setUserID(resultSet.getInt("userID"));
+            groupRequest.setRequestText(resultSet.getString("requestText"));
+            groupRequest.setRequestTime(resultSet.getDate("requestTime"));
+            groupRequestList.add(groupRequest);
+        }
+
+        int responseCode = Dashboard.displayGroupRequests(groupRequestList);
+        if(responseCode==-1){
+            System.out.println("No Pending Group Membership Requests");
+            return -1;
+        }
+
+
+        HashMap<Integer, List<Integer>> groupAndToAcceptMapping = Dashboard.getGroupRequestsToAdd(groupRequestList);
+        int numToAdd = groupAndToAcceptMapping.size();
+        if(numToAdd==0){
+            System.out.println("No new group members were added. Requests deleted!");
+            return -1;
+        }else{
+            System.out.println("Adding the selected group members");
+            conn = openConnection();
+            for(int i : groupAndToAcceptMapping.keySet()){
+                CallableStatement callableStatement = conn.prepareCall("call confirmGroupMembers(?, ?)");
+                callableStatement.setInt(1,i);
+                callableStatement.setArray(2, conn.createArrayOf("INTEGER", groupAndToAcceptMapping.get(i).toArray()));
+                callableStatement.execute();
+            }
+            conn.close();
+        }
+
+        //TODO: handle "No groups are currently managed" should be displayed if the user is not a manager of any groups
+        return 1;
     }
     public static int leaveGroup(){
         return -1;
@@ -583,6 +643,47 @@ public class BeSocial{
             this.requestText = requestText;
         }
     }
+    public static class GroupRequest{
+        private int gID;
+        private int userID;
+        private String requestText;
+        private Date requestTime;
+
+        public GroupRequest() {
+        }
+
+        public int getgID() {
+            return gID;
+        }
+
+        public void setgID(int gID) {
+            this.gID = gID;
+        }
+
+        public int getUserID() {
+            return userID;
+        }
+
+        public void setUserID(int userID) {
+            this.userID = userID;
+        }
+
+        public String getRequestText() {
+            return requestText;
+        }
+
+        public void setRequestText(String requestText) {
+            this.requestText = requestText;
+        }
+
+        public Date getRequestTime() {
+            return requestTime;
+        }
+
+        public void setRequestTime(Date requestTime) {
+            this.requestTime = requestTime;
+        }
+    }
 
     public static class Dashboard{
 
@@ -709,7 +810,6 @@ public class BeSocial{
         //code for confirm friend request--------------------------------------------------------
         private static void startConfirmFriendRequest() throws SQLException {
             confirmFriendRequests();
-            //getFriendsToAdd();
             return;
         }
         public static int displayFriendRequests(List<FriendRequest> response) {
@@ -794,9 +894,109 @@ public class BeSocial{
             }
             return detailList;
         }
-
         //end code for create group----------------------------------------------------
 
+
+        //code for initiate adding group----------------------------------------------------
+        public static void startInitiateAddingGroup() throws SQLException {
+            List<String> inputDetails = getGroupReqDetails();
+            initiateAddingGroup(Integer.parseInt(inputDetails.get(0)), inputDetails.get(1));
+        }
+        public static List<String> getGroupReqDetails(){
+            List<String> toReturnDetails = new ArrayList<>(2);
+            System.out.print("Enter the details of the group you'd like to join.\nGroupID: ");
+            String input = scanner.nextLine().trim();
+            try {
+                int gID = Integer.parseInt(input);
+                toReturnDetails.add(gID+"");
+            } catch (NumberFormatException e) {
+                System.out.println("Enter the Group ID you would like to request.");
+            }
+            System.out.print("Enter your request text: ");
+            toReturnDetails.add(scanner.nextLine());
+
+            return toReturnDetails;
+        }
+        //end code for initiate adding group-------------------------------------------------
+
+
+
+        //code for confirm group member----------------------------------------------------
+        public static void startConfirmGroupMembership() throws SQLException {
+            confirmGroupMembership();
+        }
+        public static int displayGroupRequests(List<GroupRequest> response) {
+            if(response.size()==0){
+                System.out.println("No Pending Group Member Requests");
+                return -1;
+            }
+
+            System.out.println("+-------+----------+--------------------------+--------------------------------------+");
+            System.out.println("| Req.# | Group ID | From User ID             | Request Text                         |");
+            System.out.println("+-------+----------+--------------------------+--------------------------------------+");
+            int i=1;
+            for (GroupRequest gr : response) {
+                int gId = gr.getgID();
+                int userID = gr.getUserID();
+                String requestText = gr.getRequestText();
+                System.out.printf("| %-5d | %-8d | %-24d | %-36s |\n", i++, gId, userID, requestText);
+            }
+            System.out.println("+-------+----------+--------------------------+--------------------------------------+");
+            return 1;
+        }
+        public static HashMap<Integer, List<Integer>> getGroupRequestsToAdd(List<GroupRequest> groupRequestList) {
+            int MAX_NUM=groupRequestList.size();
+            HashMap<Integer, List<Integer>> newList = new HashMap<>();
+
+            boolean done = false;
+            while (!done) {
+                System.out.print("Enter a request number to accept (or 'ALL' for all or 'DONE' to stop): ");
+                String input = scanner.nextLine().trim().toUpperCase();
+                switch (input) {
+                    case "ALL":
+                        newList.clear();
+                        for(GroupRequest gr : groupRequestList){
+                            if(newList.containsKey(gr.gID)){
+                                //TODO: both of the .add(dr.userID) will need to do a sorted add where it adds
+                                // them in chronological order
+                                newList.get(gr.gID).add(gr.userID);
+                            }else{
+                                List<Integer> idList = new ArrayList<>();
+                                idList.add(gr.userID);
+                                newList.put(gr.gID, idList);
+                            }
+                        }
+                        System.out.println("Accepted all requests.");
+                        break;
+                    case "DONE":
+                        done = true;
+                        break;
+                    default:
+                        try {
+                            int requestNumber = Integer.parseInt(input);
+                            if (requestNumber >= 1 && requestNumber <= MAX_NUM) {
+                                GroupRequest gr = groupRequestList.get(requestNumber-1);
+                                if(newList.containsKey(gr.gID)){
+                                    //TODO: both of the .add(dr.userID) will need to do a sorted add where it adds
+                                    // them in chronological order
+                                    newList.get(gr.gID).add(gr.userID);
+                                }else{
+                                    List<Integer> idList = new ArrayList<>();
+                                    idList.add(gr.userID);
+                                    newList.put(gr.gID, idList);
+                                }
+                                System.out.printf("Added request %d, UserID: %d.\n", requestNumber, gr.getUserID());
+                            } else {
+                                System.out.printf("Request number must be between 1 and %d.%n", MAX_NUM);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input.");
+                        }
+                }
+            }
+            return newList;
+        }
+        //end code for confirm group member-------------------------------------------------
 
     }
 }
