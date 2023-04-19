@@ -102,8 +102,7 @@ public class BeSocial{
                         Dashboard.startDisplayMessages();
                         break;
                     case 13:
-                        System.out.println("You chose option 13: Display New Messages");
-                        // Code to display new messages
+                        Dashboard.startDisplayNewMessages();
                         break;
                     case 14:
                         System.out.println("You chose option 14: Display Friends");
@@ -628,8 +627,32 @@ public class BeSocial{
 
     }
 
-    public static int displayNewMessages(){
-        return -1;
+    public static int displayNewMessages() throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM display_new_messages(?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet rs = preparedStatement.executeQuery();
+
+        List<Message> messagesList = new ArrayList<>();
+        while(rs.next()){
+            Message p = new Message();
+            p.setMsgID(rs.getInt("msgID"));
+            p.setFromID(rs.getInt("fromID"));
+            p.setMessageBody(rs.getString("messagebody"));
+            p.setTimeSent(rs.getDate("timeSent"));
+            messagesList.add(p);
+        }
+
+        int responseCode = Dashboard.displayMSGsToUser(messagesList);
+
+        if(responseCode==-1){
+            System.out.println("No new messages to read.");
+            return -1;
+        }else{
+            return 1;
+        }
     }
 
     public static int displayFriends(){
@@ -1353,7 +1376,8 @@ public class BeSocial{
 
 
         //code for Display New Messages -------------------------------------------------
-        public static void startDisplayNewMessages() {
+        public static void startDisplayNewMessages() throws SQLException {
+            displayNewMessages();
         }
         //end code for Display New Messages -------------------------------------------------
 
