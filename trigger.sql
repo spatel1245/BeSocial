@@ -589,8 +589,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT * FROM group_size_Ranked();
-
 
 -----------------------------------------------------------------
 --END FUNCTION 8Return Ranked Groups
@@ -710,10 +708,8 @@ $$ LANGUAGE plpgsql;
 --START FUNCTION 11 Rank Profile
 -----------------------------------------------------------------
 CREATE OR REPLACE FUNCTION rank_profiles()
-RETURNS TABLE (
-    userID INTEGER,
-    num_friends BIGINT
-) AS $$
+RETURNS TABLE (userID INTEGER,num_friends INTEGER)
+AS $$
 BEGIN
     DECLARE
     rec_temporaryAdd RECORD;
@@ -729,11 +725,10 @@ FOR rec_temporaryAdd IN SELECT
     WHERE g2.userid != g1.userid AND g1.userid<g2.userid
     ORDER BY
         g1.gid
-LOOP
-    INSERT INTO t1 VALUES(rec_temporaryAdd.userid1,rec_temporaryAdd.userid2);
 
-
-    end loop;
+    LOOP
+        INSERT INTO t1 VALUES(rec_temporaryAdd.userid1,rec_temporaryAdd.userid2);
+end loop;
 
 FOR rec_temporaryAdd IN SELECT
         friend.userid1 AS u1, friend.userid2 AS u2
@@ -751,7 +746,7 @@ LOOP
             SELECT DISTINCT LEAST(userID1, userID2) AS userID1, GREATEST(userID1, userID2) AS userID2
             FROM t1
         )
-        SELECT profile.userID, COUNT(distinct_friends.userID1) AS num_friends
+        SELECT profile.userID, COUNT(distinct_friends.userID1)::integer AS num_friends
         FROM profile
         LEFT JOIN distinct_friends ON distinct_friends.userID1 = profile.userID OR distinct_friends.userID2 = profile.userID
         GROUP BY profile.userID
