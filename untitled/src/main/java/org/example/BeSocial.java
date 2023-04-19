@@ -503,8 +503,26 @@ public class BeSocial{
     }
 
     public static int sendMessageToUser(int userId) throws SQLException {
+        if(currentAccount==null) return -1;
+
         Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, userId);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        int friends=0;
+        if (rs.next()) {
+            friends = rs.getInt(1);
+            if(friends==-1){
+                System.out.println("You are not friends with this user.");
+                return -1;
+            }
+        }
+
+        conn = openConnection();
+        preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
                 "userID=?");
         preparedStatement.setInt(1, userId);
         ResultSet response  = preparedStatement.executeQuery();
