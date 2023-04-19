@@ -390,6 +390,19 @@ public class BeSocial{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT COUNT(*) AS count FROM " +
+                "groupInfo WHERE gID=?");
+        preparedStatement.setInt(1, groupID);
+        ResultSet rs = preparedStatement.executeQuery();
+
+        if (rs.next()) {
+            int count = rs.getInt("count");
+            if (count == 0) {
+                System.out.println("The group you requested doesn't exist.");
+                conn.close();
+                return -1;
+            }
+        }
         CallableStatement callableStatement = conn.prepareCall("call createPendingGroupMember(?,?,?)");
         callableStatement.setInt(1, groupID);
         callableStatement.setInt(2, currentAccount.getUserID());
@@ -720,7 +733,7 @@ public class BeSocial{
 
         Connection conn = openConnection();
         //TODO: Fill in the function name below
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM ");
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM rank_profiles()");
         ResultSet rs = preparedStatement.executeQuery();
         conn.close();
 
@@ -730,7 +743,7 @@ public class BeSocial{
             Profile p = new Profile();
             //TODO: You might have to replace the column names here
             p.setUserID(rs.getInt("userID"));
-            p.setCountOfSomething(rs.getInt("numFriends"));
+            p.setCountOfSomething(rs.getInt("num_friends"));
             listOfProfiles.add(p);
         }
 
