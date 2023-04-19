@@ -482,9 +482,6 @@ $$ LANGUAGE plpgsql;
 --END FUNCTION 4 SendMessageToGroup
 -----------------------------------------------------------------
 
------------------------------------------------------------------
---BEGIN FUNCTION 5 displayFriends
------------------------------------------------------------------
 
 -- CREATE OR REPLACE VIEW friend_display
 --     AS
@@ -514,6 +511,11 @@ $$ LANGUAGE plpgsql;
 --         SELECT col1, col2 FROM table2;
 -- END;
 -- $$ LANGUAGE plpgsql;
+-----------------------------------------------------------------
+--BEGIN FUNCTION 5 listOfFriend IDS
+-----------------------------------------------------------------
+
+
 
 DROP FUNCTION IF EXISTS list_of_friend_IDs(_userID integer);
 
@@ -526,6 +528,16 @@ BEGIN
         SELECT f.userid1 FROM friend f WHERE f.userID2 = _userID;
 END;
 $$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 5 listOfFreind IDS
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 6 Display_Friends
+-----------------------------------------------------------------
+
+
 
 DROP FUNCTION IF EXISTS display_friends();
 
@@ -541,11 +553,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
---END FUNCTION 5 displayFriends
+--END FUNCTION 6 DisplayFriends
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---BEGIN FUNCTION 6 Detail_friend
+--BEGIN FUNCTION 7 Detail_friend
 -----------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION displayDetailFriend(user_id integer)
@@ -557,11 +569,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
---END FUNCTION 6 Detail_friend
+--END FUNCTION 7 Detail_friend
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---BEGIN FUNCTION 7 Return Ranked Groups
+--BEGIN FUNCTION 8 Return Ranked Groups
 -----------------------------------------------------------------
 CREATE OR REPLACE VIEW groups_size_ranked
     AS
@@ -571,21 +583,20 @@ CREATE OR REPLACE VIEW groups_size_ranked
             GROUP BY groupinfo.gid
             ORDER BY COUNT(userID) DESC;
 
-CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
-    RETURNS SETOF groupinfo AS $$
+CREATE OR REPLACE FUNCTION group_size_Ranked()
+    RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
-     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
-            SELECT COUNT(userID), groupmember.gid
+     RETURN QUERY
+        SELECT COUNT(userID), groupinfo.gid
             FROM groupmember
-            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY gid
-            ORDER BY COUNT(groupmember.userID) DESC;';
-    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
 END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
---END FUNCTION 7 Return Ranked Groups
+--END FUNCTION 8Return Ranked Groups
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
