@@ -486,22 +486,57 @@ $$ LANGUAGE plpgsql;
 --BEGIN FUNCTION 5 displayFriends
 -----------------------------------------------------------------
 
-CREATE OR REPLACE VIEW friend_display
-    AS
-             SELECT userid2,
-            profile.name
-             FROM friend
-             INNER JOIN profile ON friend.userID2=profile.userID;
+-- CREATE OR REPLACE VIEW friend_display
+--     AS
+--              SELECT userid2,
+--             profile.name
+--              FROM friend
+--              INNER JOIN profile ON friend.userID2=profile.userID;
 
-CREATE OR REPLACE FUNCTION displayFriends(userid integer)
-    RETURNS SETOF friend AS $$
+-- CREATE OR REPLACE FUNCTION displayFriends(userid integer)
+--     RETURNS SETOF friend AS $$
+-- BEGIN
+--     EXECUTE 'CREATE OR REPLACE VIEW friend_display AS
+--              SELECT userid2, profile.name
+--              FROM friend
+--              INNER JOIN profile ON friend.userID2=profile.userID
+--             WHERE userid1 = ' || userid||';';
+--     RETURN QUERY SELECT * FROM friend_display;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE OR REPLACE FUNCTION display_friends(userid integer)
+--     RETURNS TABLE (name VARCHAR(50), userID INTEGER) AS $$
+-- BEGIN
+--     RETURN QUERY
+--         SELECT userId2, name FROM profile
+--         UNION
+--         SELECT col1, col2 FROM table2;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+DROP FUNCTION IF EXISTS list_of_friend_IDs(_userID integer);
+
+CREATE OR REPLACE FUNCTION list_of_friend_IDs(_userID integer)
+    RETURNS TABLE (userID integer) AS $$
 BEGIN
-    EXECUTE 'CREATE OR REPLACE VIEW friend_display AS
-             SELECT userid2, profile.name
-             FROM friend
-             INNER JOIN profile ON friend.userID2=profile.userID
-            WHERE userid1 = ' || userid||';';
-    RETURN QUERY SELECT * FROM friend_display;
+    RETURN QUERY
+        SELECT f.userid2 FROM friend f WHERE f.userID1 = _userID
+        UNION
+        SELECT f.userid1 FROM friend f WHERE f.userID2 = _userID;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP FUNCTION IF EXISTS display_friends();
+
+CREATE OR REPLACE FUNCTION display_friends(_userID integer)
+    RETURNS SETOF profile AS $$
+DECLARE
+    friendIDs INTEGER[];
+BEGIN
+    SELECT ARRAY_AGG(userID) INTO friendIDs FROM list_of_friend_IDs(_userID);
+    RETURN QUERY
+        SELECT * FROM profile WHERE profile.userID = ANY(friendIDs);
 END;
 $$ LANGUAGE plpgsql;
 
