@@ -86,7 +86,7 @@ CREATE TABLE  pendingGroupMember
 
 CREATE TABLE message
 (
-    msgID INTEGER NOT NULL,
+    msgID SERIAL NOT NULL,
     fromID INTEGER NOT NULL, -- Assume that message must be sent from a user.
     messageBody VARCHAR(200) NOT NULL, --Assume that message cannot be null or empty
     toUserID INTEGER DEFAULT NULL, --Assume that a toUSerId may be null the groupID is not null.
