@@ -7,23 +7,23 @@
 -- and use a trigger to add a corresponding entry into the messageRecipient relation. The user
 -- should lastly be shown success or failure feedback.
 
--- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION FIXED
-DROP FUNCTION IF EXISTS send_message_to_friend(integer, integer, text);
-
-CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body TEXT)
-    RETURNS BOOLEAN
-AS $$
-BEGIN
-    -- Insert the new message into the message table
-
-    INSERT INTO message VALUES (default, user_id, friend_id, NULL, NOW(), message_body); -- will implicitly call add_message_recipient()
-
-    RETURN true;
-EXCEPTION
-    WHEN others THEN
-        RETURN false;
-END;
-$$ LANGUAGE plpgsql;
+-- -- SEE BEN'S ADDITIONAL FILE FOR THIS FUNCTION FIXED
+-- DROP FUNCTION IF EXISTS send_message_to_friend(integer, integer, text);
+--
+-- CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body TEXT)
+--     RETURNS BOOLEAN
+-- AS $$
+-- BEGIN
+--     -- Insert the new message into the message table
+--
+--     INSERT INTO message VALUES (default, user_id, friend_id, NULL, NOW(), message_body); -- will implicitly call add_message_recipient()
+--
+--     RETURN true;
+-- EXCEPTION
+--     WHEN others THEN
+--         RETURN false;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 
 
@@ -53,64 +53,55 @@ $$ LANGUAGE plpgsql;
 -- should be displayed in a nicely formatted way.
 
 
-DROP FUNCTION IF EXISTS display_messages(integer);
-CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
-RETURNS TABLE ( -- return a table displaying the contents of all of a user's messages
-    msgID INTEGER,
-    messageBody varchar(200),
-    fromID INTEGER,
-    timeSent TIMESTAMP
-)
-AS $$
-
-BEGIN
-    RETURN QUERY -- allows for the returned table to "communicate" with the tables we have
-    SELECT
-        message.msgID,
-        message.messageBody,
-        message.fromID,
-        message.timeSent
-    FROM
-        message JOIN messageRecipient ON message.msgID = messageRecipient.msgID
-    WHERE
-        messageRecipient.userID = user_id
-    ORDER BY
-        timeSent DESC;
-END;
-$$ LANGUAGE plpgsql;
+-- DROP FUNCTION IF EXISTS display_messages;
+-- CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
+--     RETURNS SETOF message
+-- AS $$
+-- BEGIN
+--     RETURN QUERY -- allows for the returned table to "communicate" with the tables we have
+--     SELECT
+--         m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
+--     FROM
+--         message m JOIN messageRecipient r ON m.msgID = r.msgID
+--     WHERE
+--         r.userID = user_id
+--     ORDER BY
+--         timeSent DESC;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 -- 14.displayNewMessages
 -- This should display messages in the same fashion as the previous task except that only those
 -- messages sent since the last time the user logged into the system should be displayed (including
 -- group messages).
 
-DROP FUNCTION IF EXISTS display_new_messages(integer);
-CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
-RETURNS TABLE (
-    msgID INTEGER,
-    messageBody varchar(200),
-    fromID INTEGER,
-    timeSent TIMESTAMP
-)
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        message.msgID,
-        message.messageBody,
-        message.fromID,
-        message.timeSent
-    FROM
-        message
-        JOIN messageRecipient ON message.msgID = messageRecipient.msgID
-        JOIN profile ON message.fromID = profile.userID
-    WHERE
-        messageRecipient.userID = user_id
-        AND message.timeSent > (SELECT lastLogin FROM profile WHERE userID = user_id)
-    ORDER BY
-        timeSent DESC;
-END;
-$$ LANGUAGE plpgsql;
+-- DROP FUNCTION IF EXISTS display_new_messages(integer);
+-- CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
+-- RETURNS TABLE (
+--     msgID INTEGER,
+--     messageBody varchar(200),
+--     fromID INTEGER,
+--     timeSent TIMESTAMP
+-- )
+-- AS $$
+-- BEGIN
+--     RETURN QUERY
+--     SELECT
+--         message.msgID,
+--         message.messageBody,
+--         message.fromID,
+--         message.timeSent
+--     FROM
+--         message
+--         JOIN messageRecipient ON message.msgID = messageRecipient.msgID
+--         JOIN profile ON message.fromID = profile.userID
+--     WHERE
+--         messageRecipient.userID = user_id
+--         AND message.timeSent > (SELECT lastLogin FROM profile WHERE userID = user_id)
+--     ORDER BY
+--         timeSent DESC;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 ---------------------------------------------------------------
 --** THROWAWAY FOR ABOVE TWO FUNCTIONS
@@ -202,6 +193,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-------------------------------------------------------------------------------------------------------------
 
 -- IN PROGRESS: if users are in the same group, they are automatically friends
 drop trigger if exists add_group_members_to_friends on groupmember;
@@ -225,41 +217,4 @@ AFTER INSERT ON groupMember
 FOR EACH ROW
 EXECUTE FUNCTION add_group_members_to_friends();
 
-
-
--- CHECK FOR IF USERS ARE FRIENDS:
-DROP FUNCTION IF EXISTS checkFriendshipExists(integer, integer);
-
-CREATE OR REPLACE FUNCTION checkFriendshipExists(userID1 INTEGER, userID2 INTEGER)
-RETURNS integer AS $$
-BEGIN
-    IF EXISTS (SELECT * FROM friend WHERE (friend.userID1 = $1 AND friend.userID2 = $2) OR (friend.userID1 = $2 AND friend.userID2 = $1)) THEN
-        RETURN 1;
-    ELSE
-        RETURN -1;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
--- CHECK FOR IF USERS ARE FRIENDS:
-
-DROP FUNCTION IF EXISTS checkGroupMemberExists;
-
-CREATE OR REPLACE FUNCTION checkGroupMemberExists(userID INTEGER, gID INTEGER)
-    RETURNS integer AS $$
-BEGIN
-    IF EXISTS (SELECT * FROM groupmember WHERE (groupmember.userid = $1 AND groupmember.gid = $2)) THEN
-        RETURN 1;
-    ELSE
-        RETURN -1;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------

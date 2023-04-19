@@ -584,3 +584,117 @@ $$ LANGUAGE plpgsql;
 -- -----------------------------------------------------------------
 --END FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
+
+
+
+
+-----------------------------------------------------------------
+--START  FUNCTION 9 Display Messages
+-----------------------------------------------------------------
+DROP FUNCTION IF EXISTS display_messages;
+CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
+    RETURNS SETOF message
+AS $$
+BEGIN
+    RETURN QUERY -- allows for the returned table to "communicate" with the tables we have
+        SELECT
+            m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
+        FROM
+            message m JOIN messageRecipient r ON m.msgID = r.msgID
+        WHERE
+                r.userID = user_id
+        ORDER BY
+            timeSent DESC;
+END;
+$$ LANGUAGE plpgsql;
+-- -----------------------------------------------------------------
+--END FUNCTION 9 Display Messages
+-----------------------------------------------------------------
+
+
+
+
+-- -----------------------------------------------------------------
+--END FUNCTION 10 Display NEW Messages
+-----------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS display_new_messages(integer);
+CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
+    RETURNS TABLE (
+                      msgID INTEGER,
+                      messageBody varchar(200),
+                      fromID INTEGER,
+                      timeSent TIMESTAMP
+                  )
+AS $$
+BEGIN
+    RETURN QUERY
+        SELECT
+            message.msgID,
+            message.messageBody,
+            message.fromID,
+            message.timeSent
+        FROM
+            message
+                JOIN messageRecipient ON message.msgID = messageRecipient.msgID
+                JOIN profile ON message.fromID = profile.userID
+        WHERE
+                messageRecipient.userID = user_id
+          AND message.timeSent > (SELECT lastLogin FROM profile WHERE userID = user_id)
+        ORDER BY
+            timeSent DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- -----------------------------------------------------------------
+--END FUNCTION 10 Display NEW Messages
+-----------------------------------------------------------------
+
+
+
+
+
+-- -----------------------------------------------------------------
+--START FUNCTION 12 Check if Two Users are Friends
+-----------------------------------------------------------------
+-- CHECK FOR IF USERS ARE FRIENDS:
+DROP FUNCTION IF EXISTS checkFriendshipExists(integer, integer);
+
+CREATE OR REPLACE FUNCTION checkFriendshipExists(userID1 INTEGER, userID2 INTEGER)
+    RETURNS integer AS $$
+BEGIN
+    IF EXISTS (SELECT * FROM friend WHERE (friend.userID1 = $1 AND friend.userID2 = $2) OR (friend.userID1 = $2 AND friend.userID2 = $1)) THEN
+        RETURN 1;
+    ELSE
+        RETURN -1;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- -----------------------------------------------------------------
+--START FUNCTION 12 Check if Two Users are Friends
+-----------------------------------------------------------------
+
+
+
+
+
+-- -----------------------------------------------------------------
+--START FUNCTION 12 Check if Member is in Group
+-----------------------------------------------------------------
+DROP FUNCTION IF EXISTS checkGroupMemberExists;
+
+CREATE OR REPLACE FUNCTION checkGroupMemberExists(userID INTEGER, gID INTEGER)
+    RETURNS integer AS $$
+BEGIN
+    IF EXISTS (SELECT * FROM groupmember WHERE (groupmember.userid = $1 AND groupmember.gid = $2)) THEN
+        RETURN 1;
+    ELSE
+        RETURN -1;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+-- -----------------------------------------------------------------
+--END FUNCTION 12 Check if Member is in Group
+-----------------------------------------------------------------
+
