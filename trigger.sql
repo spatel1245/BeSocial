@@ -576,6 +576,7 @@ $$ LANGUAGE plpgsql;
 --BEGIN FUNCTION 8 Return Ranked Groups
 -----------------------------------------------------------------
 
+
 CREATE OR REPLACE FUNCTION group_size_ranked()
     RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
@@ -587,6 +588,9 @@ BEGIN
             ORDER BY COUNT(userID) DESC;
 END;
 $$ LANGUAGE plpgsql;
+
+SELECT * FROM group_size_Ranked();
+
 
 -----------------------------------------------------------------
 --END FUNCTION 8Return Ranked Groups
@@ -703,11 +707,62 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- -----------------------------------------------------------------
---START FUNCTION 11 Check if Two Users are Friends
+--START FUNCTION 11 Rank Profile
 -----------------------------------------------------------------
+CREATE OR REPLACE FUNCTION rank_profiles()
+RETURNS TABLE (
+    userID INTEGER,
+    num_friends BIGINT
+) AS $$
+BEGIN
+    DECLARE
+    rec_temporaryAdd RECORD;
+
+BEGIN
+    DROP TABLE IF EXISTS t1;
+    CREATE TEMPORARY TABLE t1(userid1 integer, userid2 integer);
+FOR rec_temporaryAdd IN SELECT
+        g1.gid, g1.userid AS userid1, g2.userid AS userid2
+    FROM
+        groupmember g1
+    LEFT JOIN groupmember g2 on g1.gid=g2.gid
+    WHERE g2.userid != g1.userid AND g1.userid<g2.userid
+    ORDER BY
+        g1.gid
+LOOP
+    INSERT INTO t1 VALUES(rec_temporaryAdd.userid1,rec_temporaryAdd.userid2);
 
 
+    end loop;
 
+FOR rec_temporaryAdd IN SELECT
+        friend.userid1 AS u1, friend.userid2 AS u2
+    FROM
+        friend
+LOOP
+    INSERT INTO t1 VALUES(rec_temporaryAdd.u1,rec_temporaryAdd.u2);
+ end loop;
+
+
+    RETURN QUERY
+        -- distinct_friends is a common table expression that only exists for as long as the query lasts
+        WITH distinct_friends AS (
+            --distinct eliminates duplicate pairs and the least and greatest orders pairs so reversed pairs considered same
+            SELECT DISTINCT LEAST(userID1, userID2) AS userID1, GREATEST(userID1, userID2) AS userID2
+            FROM t1
+        )
+        SELECT profile.userID, COUNT(distinct_friends.userID1) AS num_friends
+        FROM profile
+        LEFT JOIN distinct_friends ON distinct_friends.userID1 = profile.userID OR distinct_friends.userID2 = profile.userID
+        GROUP BY profile.userID
+        ORDER BY num_friends DESC;
+END;
+END;
+$$ LANGUAGE plpgsql;
+
+-- -----------------------------------------------------------------
+--END FUNCTION 11 Rank Profile
+-----------------------------------------------------------------
 
 
 -- -----------------------------------------------------------------
@@ -729,3 +784,6 @@ $$ LANGUAGE plpgsql;
 --END FUNCTION 12 Check if Member is in Group
 -----------------------------------------------------------------
 
+-- -----------------------------------------------------------------
+--START FUNCTION 14 Check if Member is in Group
+-----------------------------------------------------------------
