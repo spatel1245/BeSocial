@@ -181,5 +181,63 @@ $$ LANGUAGE plpgsql;
 -- $$ LANGUAGE plpgsql;
 --------------------------------------
 
+CREATE OR REPLACE VIEW groups_size_ranked
+    AS
+            SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
 
+CREATE OR REPLACE FUNCTION group_size_Ranked(user_id integer)
+    RETURNS SETOF groupinfo AS $$
+BEGIN
+     EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
+            SELECT COUNT(userID), groupmember.gid
+            FROM groupmember
+            INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY gid
+            ORDER BY COUNT(groupmember.userID) DESC;';
+    RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- IN PROGRESS: if users are in the same group, they are automatically friends
+drop trigger if exists add_group_members_to_friends on groupmember;
+CREATE OR REPLACE FUNCTION add_group_members_to_friends()
+RETURNS TRIGGER AS
+$BODY$
+BEGIN
+    INSERT INTO friend (userID1, userID2)
+    SELECT DISTINCT gm1.userID, gm2.userID
+    FROM groupMember gm1, groupMember gm2
+    WHERE gm1.gID = NEW.gID AND gm2.gID = NEW.gID AND gm1.userID <> gm2.userID
+    ON CONFLICT DO NOTHING;
+
+    RETURN NEW;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER group_member_added_to_group
+AFTER INSERT ON groupMember
+FOR EACH ROW
+EXECUTE FUNCTION add_group_members_to_friends();
+
+
+
+-- CHECK FOR IF USERS ARE FRIENDS:
+DROP FUNCTION IF EXISTS checkFriendshipExists(integer, integer);
+
+CREATE OR REPLACE FUNCTION checkFriendshipExists(userID1 INTEGER, userID2 INTEGER)
+RETURNS integer AS $$
+BEGIN
+    IF EXISTS (SELECT * FROM friend WHERE (friend.userID1 = $1 AND friend.userID2 = $2) OR (friend.userID1 = $2 AND friend.userID2 = $1)) THEN
+        RETURN 1;
+    ELSE
+        RETURN -1;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
 
