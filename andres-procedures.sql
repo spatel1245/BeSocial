@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION send_message_to_friend(user_id INTEGER, friend_id INT
 AS $$
 BEGIN
     -- Insert the new message into the message table
-    INSERT INTO message VALUES (default, user_id, friend_id, NOW(), message_body); -- will implicitly call add_message_recipient()
+    INSERT INTO message VALUES (default, user_id, friend_id, ); -- will implicitly call add_message_recipient()
     RETURN true;
 EXCEPTION
     WHEN others THEN
