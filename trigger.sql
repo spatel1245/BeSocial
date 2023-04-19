@@ -345,14 +345,15 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN PROCEDURE 6 searchForProfile
 -----------------------------------------------------------------
--- CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
--- AS $$
--- DECLARE
--- BEGIN
---     RETURN QUERY(SELECT * FROM profile WHERE name LIKE '%userName%');
--- END;
--- $$ LANGUAGE plpgsql;
+CREATE OR REPLACE PROCEDURE searchFor(userName varchar(50),email varchar(50))
+AS $$
+DECLARE
+BEGIN
+    (SELECT * FROM profile WHERE userName=profile.name);
+END;
+$$ LANGUAGE plpgsql;
 
+call searchFor('Kathleen','bez@gmail.com');
 -----------------------------------------------------------------
 --END PROCEDURE 6 confirmGroupMembers
 -----------------------------------------------------------------
@@ -369,17 +370,39 @@ BEGIN
 END;
 $$;
 -----------------------------------------------------------------
---END PROCEDURE 6 confirmGroupMembers
+--END PROCEDURE 7 confirmGroupMembers
 -----------------------------------------------------------------
 
+
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+------------------------FUNCTIONS-----------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+
+
+
+
+-----------------------------------------------------------------
+--VIEW
+-----------------------------------------------------------------
 DROP VIEW IF EXISTS group_reqs_to_accept;
 
--- CREATE VIEW group_reqs_to_accept AS
--- SELECT p.*
--- FROM pendingGroupMember p
---          JOIN groupMember g ON p.gID = g.gID
--- WHERE p.userID = 0 AND g.role = 'manager';
+CREATE VIEW group_reqs_to_accept AS
+SELECT p.*
+FROM pendingGroupMember p
+         JOIN groupMember g ON p.gID = g.gID
+WHERE p.userID = 0 AND g.role = 'manager';
 
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 1 get_pending_members
+-----------------------------------------------------------------
 DROP FUNCTION IF EXISTS get_pending_members(user_id INTEGER);
 
 CREATE OR REPLACE FUNCTION get_pending_members(p_user_id INTEGER)
@@ -393,3 +416,37 @@ BEGIN
     RETURN QUERY SELECT * FROM group_reqs_to_accept;
 END;
 $$ LANGUAGE plpgsql;
+
+-----------------------------------------------------------------
+--END FUNCTION 1 get_pending_members
+-----------------------------------------------------------------
+
+-----------------------------------------------------------------
+--BEGIN FUNCTION 2 searchProfiles
+-----------------------------------------------------------------
+DROP FUNCTION IF EXISTS get_pending_members(user_id INTEGER);
+--
+-- DROP VIEW IF EXISTS searched;
+--
+-- CREATE OR REPLACE VIEW searched AS
+--              SELECT name
+--              FROM profile
+--              WHERE profile.name = ' || p_name ||';
+--
+--
+--
+-- CREATE OR REPLACE FUNCTION searchProfiles(p_name varchar(50), email varchar(50))
+--     RETURNS SETOF profile AS $$
+-- BEGIN
+--     EXECUTE 'CREATE OR REPLACE VIEW searched AS
+--              SELECT name
+--              FROM profile
+--              WHERE profile.name = ' || p_name ||';';
+--     RETURN QUERY SELECT * FROM searched;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+
+-----------------------------------------------------------------
+--END FUNCTION 2 SEARCH PROFILES
+-----------------------------------------------------------------
