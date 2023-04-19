@@ -1,6 +1,7 @@
 package org.example;
 
 import javax.swing.*;
+import javax.xml.stream.events.ProcessingInstruction;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -9,7 +10,7 @@ public class BeSocial{
 
     private static final String url = "jdbc:postgresql://localhost:5432/";
     private static final String user = "postgres";
-    private static final String pass = "4qwkzaaw";
+    private static final String pass = "PASSWORD";
     public static Profile currentAccount = null;
 
     public static void main(String[] args) throws SQLException {
@@ -89,8 +90,7 @@ public class BeSocial{
                         Dashboard.startLeaveGroup();
                         break;
                     case 9:
-                        System.out.println("You chose option 9: Search for Profile");
-                        // Code to search for a profile
+                        Dashboard.startSearchForProfile();
                         break;
                     case 10:
                         System.out.println("You chose option 10: Send Message to User");
@@ -399,7 +399,7 @@ public class BeSocial{
     public static int confirmGroupMembership() throws SQLException {
         if(currentAccount==null) return -1;
 
-       Connection conn = openConnection();
+        Connection conn = openConnection();
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM get_pending_members(?)");
         preparedStatement.setInt(1, currentAccount.getUserID());
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -468,14 +468,41 @@ public class BeSocial{
         return -1;
 
     }
+    public static int searchForProfile(String search) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT search_user_profiles(?)");
+        preparedStatement.setArray(1, conn.createArrayOf("text", search.split(" ")));
+        ResultSet resultSet = preparedStatement.executeQuery();
+        conn.close();
+
+        ResultSetMetaData metadata = resultSet.getMetaData();
+        int numColumns = metadata.getColumnCount();
 
 
 
-
-    public static int searchForProfile(){
-
+        List<Profile> matchingProfileList = new ArrayList<Profile>();
+        while(resultSet.next()){
+            Profile p = new Profile();
+            String response = resultSet.getString("search_user_profiles");
+            //this is a case to handle when the user only has a single name, such as in the case of admin
+            //in those cases, the resulting string doesn't have "" surrounding, so the substring bounds are adjusted
+            if(response.charAt(response.length()-1)!='"'){
+                String[] fields = response.substring(1,response.length()-1).split(",");
+                p.setUserID(Integer.parseInt(fields[0]));
+                p.setName(fields[1]);
+            }else{
+                String[] fields = response.substring(1,response.length()-2).split(",");
+                p.setUserID(Integer.parseInt(fields[0]));
+                p.setName(fields[1].substring(1));
+            }
+            matchingProfileList.add(p);
+        }
+        Dashboard.displayProfiles(matchingProfileList);
         return -1;
     }
+
     public static int sendMessageToUser(){
         return -1;
     }
@@ -554,6 +581,10 @@ public class BeSocial{
         public Profile(String email, String password) {
             this.email = email;
             this.password = password;
+        }
+
+        public Profile() {
+
         }
 
         public int getUserID() {
@@ -1027,7 +1058,27 @@ public class BeSocial{
 
 
         //code for search for profile -------------------------------------------------
-        public static void startSearchForProfile() {
+        public static void startSearchForProfile() throws SQLException {
+            searchForProfile(getSearchString());
+        }
+        public static String getSearchString() {
+            System.out.println("Search for a user by their name or email. Separate your search words with a space.");
+            System.out.print("Search: ");
+            return scanner.nextLine();
+        }
+        public static void displayProfiles(List<Profile> matchingProfileList) {
+            System.out.println("+----------+--------------------------+");
+            System.out.println("| User ID  | Name                     |");
+            System.out.println("+----------+--------------------------+");
+            for (Profile p : matchingProfileList) {
+                int userID = p.getUserID();
+                String name = p.getName();
+                System.out.printf("| %-8d | %-24s |\n", userID, name);
+            }
+            System.out.println("+----------+--------------------------+");
+
+            System.out.print("Press enter when you are done viewing the results.");
+            scanner.nextLine();
         }
         //end code for search for profile -------------------------------------------------
 
