@@ -575,21 +575,14 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 8 Return Ranked Groups
 -----------------------------------------------------------------
-CREATE OR REPLACE VIEW groups_size_ranked
-    AS
-            SELECT COUNT(userID), groupinfo.gid
-            FROM groupmember
-            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
-            GROUP BY groupinfo.gid
-            ORDER BY COUNT(userID) DESC;
 
-DROP FUNCTION group_size_Ranked();
-CREATE OR REPLACE FUNCTION group_size_Ranked()
-    RETURNS TABLE (group_id bigint, total integer) AS $$
+
+CREATE OR REPLACE FUNCTION group_size_ranked()
+    RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
      RETURN QUERY
-        SELECT COUNT(userID), groupinfo.gid
-            FROM groupmember
+        SELECT groupinfo.gid, COUNT(userID)::integer
+        FROM groupmember
             JOIN  groupinfo ON groupinfo.gid=groupmember.gid
             GROUP BY groupinfo.gid
             ORDER BY COUNT(userID) DESC;
