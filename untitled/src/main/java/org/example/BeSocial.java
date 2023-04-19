@@ -105,8 +105,7 @@ public class BeSocial{
                         Dashboard.startDisplayNewMessages();
                         break;
                     case 14:
-                        System.out.println("You chose option 14: Display Friends");
-                        // Code to display friends
+                        Dashboard.startDisplayFriends();
                         break;
                     case 15:
                         System.out.println("You chose option 15: Rank Groups");
@@ -290,6 +289,21 @@ public class BeSocial{
         String name = null;
         if (response.next()){
             name = response.getString("name");
+            conn = openConnection();
+            preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
+            preparedStatement.setInt(1, currentAccount.getUserID());
+            preparedStatement.setInt(2, sendToUserID);
+            response  = preparedStatement.executeQuery();
+            conn.close();
+            int friends =0;
+            if (response.next()) {
+                friends = response.getInt(1);
+                if(friends==1){
+                    System.out.printf("You are already friends with %s!\n", name);
+                    return -1;
+                }
+            }
+
             String message = Dashboard.initiateFriendshipMessage(name);
 
             if(message!=null){
@@ -655,8 +669,30 @@ public class BeSocial{
         }
     }
 
-    public static int displayFriends(){
-        return -1;
+    public static int displayFriends() throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM display_friends(?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet rs = preparedStatement.executeQuery();
+
+        List<Profile> friendslist = new ArrayList<>();
+        while(rs.next()){
+            Profile p = new Profile();
+            p.setUserID(rs.getInt("userID"));
+            p.setName(rs.getString("Name"));
+            friendslist.add(p);
+        }
+
+        int responseCode = Dashboard.displayUsersFriends(friendslist);
+
+        if(responseCode==-1){
+            System.out.println("You don't have any friends.");
+            return -1;
+        }else{
+            return 1;
+        }
     }
     public static int rankGroups(){
         return -1;
@@ -1384,7 +1420,25 @@ public class BeSocial{
 
 
         //code for Display Friends -------------------------------------------------
-        public static void startDisplayFriends() {
+        public static void startDisplayFriends() throws SQLException {
+            displayFriends();
+        }
+        public static int displayUsersFriends(List<Profile> friendList) {
+            if(friendList.size()==0) return -1;
+
+            System.out.println("+--------------+--------------------------+");
+            System.out.println("| Friend's ID  | Name                     |");
+            System.out.println("+--------------+--------------------------+");
+            for (Profile p : friendList) {
+                int friendID = p.getUserID();
+                String name = p.getName();
+                System.out.format("| %-12d | %-24s |%n", friendID, name);
+            }
+            System.out.println("+--------------+--------------------------+");
+
+            System.out.print("Press enter when you are done viewing the results.");
+            scanner.nextLine();
+            return 1;
         }
         //end code for Display Friends -------------------------------------------------
 
