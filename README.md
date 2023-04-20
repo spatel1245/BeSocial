@@ -38,6 +38,7 @@ For Windows:
      * This will ensure the system is empty before starting... ESSENTIAL for driver*
      
 4. Run:
+*NOTE. At runtime for BeSocial, the only user in the system will be admin with the specified specs.*
 For Mac:      
       java -cp postgresql-42.6.0.jar:. Driver
       or
