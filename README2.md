@@ -547,11 +547,3 @@ This option should cleanly shut down and exit the program.
 
 </details>
 <br>
-
-## Explanation
-<details>
-
-</details>
-<br>
-</details>
-
