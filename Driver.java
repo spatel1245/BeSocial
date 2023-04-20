@@ -249,8 +249,6 @@ public class Driver{
         statement.executeUpdate(deleteQuery);
         String insertIntoClock = "INSERT INTO clock VALUES ('2021-01-01 00:00:00');";
         statement.executeUpdate(insertIntoClock);
-        String insertIntoProfile = "INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');";
-        statement.executeUpdate(insertIntoProfile);
         conn.close();
 
         System.out.println("Assuming you ran schema2.sql and trigger2.sql already, the driver is setup!");
