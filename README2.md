@@ -534,7 +534,11 @@ This option should cleanly shut down and exit the program.
 ### Driver file runs through BeSocial Application Client demonstrating its wide variety of functionality with sample data, running it all automatically. 
 
 <details>
-
+ 
+<br>
+ 
+ **BEFORE YOU RUN THE DRIVER:** Run the Schema.sql and Trigger.sql files before running the Driver file.
+ 
 <br>
 
 ## Expected Output
