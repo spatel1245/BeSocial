@@ -330,22 +330,22 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --Begin FUNCTION 5 leaveGroup
 -----------------------------------------------------------------
-CREATE OR REPLACE FUNCTION leaveGroup(group_id integer, user_id integer)
-RETURNS integer AS $$
-DECLARE
-    match_found integer;
-BEGIN
-    DELETE FROM groupmember
-    WHERE groupmember.gid = group_id AND groupmember.userid = user_id
-    RETURNING 1 INTO match_found;
-
-    IF FOUND THEN
-        RETURN match_found;
-    ELSE
-        RETURN -1;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION leaveGroup(group_id integer, user_id integer)
+-- RETURNS integer AS $$
+-- DECLARE
+--     match_found integer;
+-- BEGIN
+--     DELETE FROM groupmember
+--     WHERE groupmember.gid = group_id AND groupmember.userid = user_id
+--     RETURNING 1 INTO match_found;
+--
+--     IF FOUND THEN
+--         RETURN match_found;
+--     ELSE
+--         RETURN -1;
+--     END IF;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
 --END FUNCTION 5 confirmGroupMembers
@@ -576,7 +576,7 @@ $$ LANGUAGE plpgsql;
 --BEGIN FUNCTION 8 Return Ranked Groups
 -----------------------------------------------------------------
 
-
+DROP FUNCTION group_size_ranked();
 CREATE OR REPLACE FUNCTION group_size_ranked()
     RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
@@ -589,10 +589,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT * FROM group_size_Ranked();
-
-
------------------------------------------------------------------
+----------------------------------------------------------------
 --END FUNCTION 8Return Ranked Groups
 -----------------------------------------------------------------
 
@@ -787,3 +784,36 @@ $$ LANGUAGE plpgsql;
 -- -----------------------------------------------------------------
 --START FUNCTION 14 Check if Member is in Group
 -----------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS top_messages(integer, integer, integer);
+CREATE OR REPLACE FUNCTION top_messages(user_ID INTEGER, x INTEGER, k INTEGER)
+RETURNS TABLE (
+    userID INTEGER,
+    num_messages INTEGER -- change the return type to BIGINT
+)
+AS $$
+DECLARE
+    curTime timestamp;
+    month interval;
+BEGIN
+    month:=interval '30 days';
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
+    RETURN QUERY
+    SELECT profile.userID, SUM(
+        CASE
+            WHEN message.touserid = user_ID THEN 1
+            ELSE 0
+        END
+    )::INTEGER AS messages
+    FROM profile
+    JOIN message ON profile.userID = message.fromID
+--     JOIN clock ON 1 = 1
+    WHERE profile.userID != user_ID
+      AND message.touserid = user_ID
+      AND (message.timesent) >= ((curTime) - (x * month))
+    AND message.timesent <= curTime
+    GROUP BY profile.userID
+    ORDER BY messages DESC
+    LIMIT k;
+END;
+$$ LANGUAGE plpgsql;
