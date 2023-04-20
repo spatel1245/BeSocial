@@ -1,4 +1,5 @@
-INSERT INTO clock VALUES (default);
+DELETE FROM clock WHERE 1=1;
+INSERT INTO clock VALUES ('2021-01-01 00:00:00');
 INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
 INSERT INTO profile VALUES (default, 'Lisa Robinson', 'lr@email.com', 'pass', '1988-09-09', '2022-06-16T16:51:28');
 INSERT INTO profile VALUES (default, 'Jessica Savage', 'js@email.com', 'pass', '1983-02-23', '2022-09-22T11:32:03');
