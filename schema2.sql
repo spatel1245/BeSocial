@@ -116,8 +116,6 @@ CREATE TABLE clock
     CONSTRAINT PK_Clock PRIMARY KEY (pseudo_time)
 );
 
-CREATE
-
 
 
 

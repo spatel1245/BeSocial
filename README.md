@@ -342,7 +342,7 @@ statements of the project. In addition you may submit any SQL queries for which 
 feedback. Specifically,
 
 - schema.sql the script to create the database schema with integrity constraints.
-- trigger.sql the script containing definitions of the triggers.
+- triggerOLDDONTRUN.sql the script containing definitions of the triggers.
 - sample-data.sql the script containing all insert statements.
 - optional-queries.sql the script containing your additional SQL queries.
 

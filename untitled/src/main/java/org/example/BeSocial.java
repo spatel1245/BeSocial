@@ -841,17 +841,6 @@ public class BeSocial{
             System.out.println();
         }
 
-
-//        if (rs.next()) { // check if there is a result
-//            System.out.println("A PATH EXISTS");
-//            Integer[] path = (Integer[]) rs.getArray(1).getArray(); // retrieve the array from the ResultSet
-//            for (int i = 0; i < path.length; i++) {
-//                System.out.println(path[i]); // print each element of the array
-//            }
-//        } else {
-//            System.out.println("No path found"); // if there is no result
-//        }
-
         return -1;
     }
 
