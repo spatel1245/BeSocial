@@ -17,7 +17,7 @@ public class BeSocial{
         boolean quit = false;
 
         while (!quit){
-            System.out.printf("-----BeSocial-----\n");
+            System.out.print("-----BeSocial-----\n");
 
             if(currentAccount==null) {
                 System.out.println("Please select an option:");
@@ -38,7 +38,7 @@ public class BeSocial{
                     }
                     default -> System.out.println("Invalid choice, please try again");
                 }
-            }else if(currentAccount!=null) {
+            }else {
                 System.out.printf("Welcome, %s\n\n", currentAccount.getName());
                 System.out.println("1. Create Profile");
                 System.out.println("2. Drop Profile");
@@ -63,72 +63,34 @@ public class BeSocial{
                 System.out.print("Selecting option: ");
                 int choice = scanner.nextInt();
                 switch (choice) {
-                    case 1:
-                        Dashboard.startCreateProfile();
-                        break;
-                    case 2:
-                        Dashboard.startDropProfile();
-                        break;
-                    case 3:
-                        Dashboard.startInitiateFriendship();
-                        break;
-                    case 4:
-                        Dashboard.startConfirmFriendRequest();
-                        break;
-                    case 5:
-                        Dashboard.startCreateGroup();
-                        break;
-                    case 6:
-                        Dashboard.startInitiateAddingGroup();
-                        break;
-                    case 7:
-                        Dashboard.startConfirmGroupMembership();
-                        break;
-                    case 8:
-                        Dashboard.startLeaveGroup();
-                        break;
-                    case 9:
-                        Dashboard.startSearchForProfile();
-                        break;
-                    case 10:
-                        Dashboard.startSendMessageToUser();
-                        break;
-                    case 11:
-                        Dashboard.startSendMessageToGroup();
-                        break;
-                    case 12:
-                        Dashboard.startDisplayMessages();
-                        break;
-                    case 13:
-                        Dashboard.startDisplayNewMessages();
-                        break;
-                    case 14:
-                        Dashboard.startDisplayFriends();
-                        break;
-                    case 15:
-                        Dashboard.startRankGroups();
-                        break;
-                    case 16:
-                        Dashboard.startRankProfiles();
-                        break;
-                    case 17:
-                        Dashboard.startTopMessages();
-                        break;
-                    case 18:
-                        Dashboard.startThreeDegrees();
-                        break;
-                    case 19:
+                    case 1 -> Dashboard.startCreateProfile();
+                    case 2 -> Dashboard.startDropProfile();
+                    case 3 -> Dashboard.startInitiateFriendship();
+                    case 4 -> Dashboard.startConfirmFriendRequest();
+                    case 5 -> Dashboard.startCreateGroup();
+                    case 6 -> Dashboard.startInitiateAddingGroup();
+                    case 7 -> Dashboard.startConfirmGroupMembership();
+                    case 8 -> Dashboard.startLeaveGroup();
+                    case 9 -> Dashboard.startSearchForProfile();
+                    case 10 -> Dashboard.startSendMessageToUser();
+                    case 11 -> Dashboard.startSendMessageToGroup();
+                    case 12 -> Dashboard.startDisplayMessages();
+                    case 13 -> Dashboard.startDisplayNewMessages();
+                    case 14 -> Dashboard.startDisplayFriends();
+                    case 15 -> Dashboard.startRankGroups();
+                    case 16 -> Dashboard.startRankProfiles();
+                    case 17 -> Dashboard.startTopMessages();
+                    case 18 -> Dashboard.startThreeDegrees();
+                    case 19 -> {
                         logout();
-                        System.out.printf("\n\n\n\n\n\n\n\n");
-                        break;
-                    case 20:
+                        System.out.print("\n\n\n\n\n\n\n\n");
+                    }
+                    case 20 -> {
                         System.out.printf("Thanks for visiting, %s\n", exit());
                         Dashboard.scanner.close();
                         quit = true;
-                        break;
-                    default:
-                        System.out.println("Invalid choice, please try again");
-                        break;
+                    }
+                    default -> System.out.println("Invalid choice, please try again");
                 }
             }
         }
@@ -172,19 +134,21 @@ public class BeSocial{
 
         Connection conn = openConnection();
 
-        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
-        preparedStatement.setString(1, name);
-        preparedStatement.setString(2, email);
-        preparedStatement.setString(3, password);
-        preparedStatement.setDate(4, Date.valueOf(DOB));
-        //preparedStatement.setString(4, DOB);
-        preparedStatement.executeUpdate();
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, email);
+            preparedStatement.setString(3, password);
+            preparedStatement.setDate(4, Date.valueOf(DOB));
+            preparedStatement.executeUpdate();
+            conn.close();
+            return 1;
+        }catch(SQLException e){
+            System.out.println("State: "+ e.getSQLState()+": Unique constraint violation error.");
+            conn.close();
+            return -1;
+        }
 
-        //TODO: we should be returning the ID of the user that was just added. For now we are just
-        // returning 1 and -1. FIX TO RETURN USERID
-
-        conn.close();
-        return 1;
     }
 
     /**
@@ -200,7 +164,7 @@ public class BeSocial{
      * @throws SQLException if an error occurs while executing the SQL statements
      */
     public static int dropProfile(String email) throws SQLException{
-        if(currentAccount==null || (currentAccount!=null && !currentAccount.isAdmin())){
+        if(currentAccount == null || !currentAccount.isAdmin()){
             System.out.println("You do not have permission to perform this operation.");
         }
 
@@ -210,9 +174,6 @@ public class BeSocial{
         preparedStatement.setString(1, email);
         int affectedRows = preparedStatement.executeUpdate();
         conn.close();
-
-        //TODO: we should be returning 1 if the user was successfully deleted. We need to implement the triggers that
-        // check and remove the rest of the areas it touches
 
         if(affectedRows>0){
             return 1;
@@ -226,12 +187,15 @@ public class BeSocial{
      *
      * @param email The email of the user attempting to log in.
      * @param password The password of the user attempting to log in.
-     * @return An integer value representing the user ID of the logged in user if login is successful,
+     * @return An integer value representing the user ID of the logged-in user if login is successful,
      *         or -1 if the email or password is invalid or if an error occurs.
      * @throws SQLException if an error occurs while executing the SQL statements
      */
     public static int login(String email, String password) throws SQLException{
-        if (currentAccount != null) return -1;
+        if (currentAccount != null){
+            System.out.printf("You are already logged in as %s.\n", currentAccount.getName());
+            return -1;
+        }
 
         Connection conn = openConnection();
 
@@ -253,8 +217,7 @@ public class BeSocial{
         }
 
         if(currentAccount!=null){
-            System.out.printf("The user was found. Name is %s, email is %s", currentAccount.getName(),
-                    currentAccount.getEmail());
+            System.out.printf("You have logged in as %s.", currentAccount.getName());
             return 1;
         }else{
             System.out.println("nothing matching was found");
@@ -272,7 +235,7 @@ public class BeSocial{
      * @param sendToUserID the user ID of the user to send a friend request to
      * @throws SQLException if an error occurs while accessing the database
      */
-    public static int initiateFriendship(int sendToUserID) throws SQLException{
+    public static int initiateFriendship(int sendToUserID, String message) throws SQLException{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
@@ -282,7 +245,7 @@ public class BeSocial{
         ResultSet response  = preparedStatement.executeQuery();
         conn.close();
 
-        String name = null;
+        String name;
         if (response.next()){
             name = response.getString("name");
             conn = openConnection();
@@ -291,7 +254,7 @@ public class BeSocial{
             preparedStatement.setInt(2, sendToUserID);
             response  = preparedStatement.executeQuery();
             conn.close();
-            int friends =0;
+            int friends;
             if (response.next()) {
                 friends = response.getInt(1);
                 if(friends==1){
@@ -300,7 +263,7 @@ public class BeSocial{
                 }
             }
 
-            String message = Dashboard.initiateFriendshipMessage(name);
+            //String message = Dashboard.initiateFriendshipMessage(name);
 
             if(message!=null){
                 conn = openConnection();
@@ -311,7 +274,7 @@ public class BeSocial{
                 preparedStatement.setString(3, message);
                 preparedStatement.executeUpdate();
                 conn.close();
-                System.out.println("Your friend request was sent");
+                System.out.println("Your friend request was sent to UserID: "+ sendToUserID);
                 return 1;
             }
             System.out.println("Request not sent.");
@@ -332,28 +295,28 @@ public class BeSocial{
      *       0 if the user has no pending friend requests.
      * @throws SQLException if there is an error accessing the database
      */
-    public static int confirmFriendRequests() throws SQLException{
-        if(currentAccount==null) return -1;
+    public static int confirmFriendRequests(Integer[] toAdd) throws SQLException{
+//        if(currentAccount==null) return -1;
+//
+//        Connection conn = openConnection();
+//        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
+//        preparedStatement.setInt(1, currentAccount.getUserID());
+//        ResultSet response  = preparedStatement.executeQuery();
+//        conn.close();
+//
+//        List<FriendRequest> friendRequestList = new ArrayList<>();
+//        while(response.next()){
+//            FriendRequest friendRequest = new FriendRequest();
+//            friendRequest.setUserID1(response.getInt("userID1"));
+//            friendRequest.setUserID2(currentAccount.getUserID());
+//            friendRequest.setRequestText(response.getString("requestText"));
+//            friendRequestList.add(friendRequest);
+//        }
 
-        Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
-        preparedStatement.setInt(1, currentAccount.getUserID());
-        ResultSet response  = preparedStatement.executeQuery();
-        conn.close();
+//        int responseCode = Dashboard.displayFriendRequests(friendRequestList);
+//        if(responseCode==-1) return -1;
 
-        List<FriendRequest> friendRequestList = new ArrayList<>();
-        while(response.next()){
-            FriendRequest friendRequest = new FriendRequest();
-            friendRequest.setUserID1(response.getInt("userID1"));
-            friendRequest.setUserID2(currentAccount.getUserID());
-            friendRequest.setRequestText(response.getString("requestText"));
-            friendRequestList.add(friendRequest);
-        }
-
-        int responseCode = Dashboard.displayFriendRequests(friendRequestList);
-        if(responseCode==-1) return -1;
-
-        Integer[] toAdd = Dashboard.getFriendsToAdd(friendRequestList);
+//        Integer[] toAdd = Dashboard.getFriendsToAdd(friendRequestList);
         if(toAdd.length==0){
             System.out.println("No new friends were add. Requests deleted!");
             return -1;
@@ -361,7 +324,7 @@ public class BeSocial{
             System.out.println("IDs that are being added: " + Arrays.toString(toAdd));
         }
 
-        conn = openConnection();
+        Connection conn = openConnection();
         CallableStatement callableStatement = conn.prepareCall("call add_select_friend_reqs(?,?)");
         callableStatement.setInt(1, currentAccount.getUserID());
         callableStatement.setArray(2, conn.createArrayOf("INTEGER", toAdd));
@@ -418,41 +381,41 @@ public class BeSocial{
         return -1;
     }
 
-    public static int confirmGroupMembership() throws SQLException {
+    public static int confirmGroupMembership(HashMap<Integer, List<Integer>> groupAndToAcceptMapping) throws SQLException {
         if(currentAccount==null) return -1;
 
-        Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM get_pending_members(?)");
-        preparedStatement.setInt(1, currentAccount.getUserID());
-        ResultSet resultSet = preparedStatement.executeQuery();
+//        Connection conn = openConnection();
+//        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM get_pending_members(?)");
+//        preparedStatement.setInt(1, currentAccount.getUserID());
+//        ResultSet resultSet = preparedStatement.executeQuery();
+//
+//        conn.close();
+//
+//        List<GroupRequest> groupRequestList = new ArrayList<>();
+//        while(resultSet.next()){
+//            GroupRequest groupRequest = new GroupRequest();
+//            groupRequest.setgID(resultSet.getInt("gID"));
+//            groupRequest.setUserID(resultSet.getInt("userID"));
+//            groupRequest.setRequestText(resultSet.getString("requestText"));
+//            groupRequest.setRequestTime(resultSet.getDate("requestTime"));
+//            groupRequestList.add(groupRequest);
+//        }
+//
+//        int responseCode = Dashboard.displayGroupRequests(groupRequestList);
+//        if(responseCode==-1){
+//            System.out.println("No Pending Group Membership Requests");
+//            return -1;
+//        }
 
-        conn.close();
 
-        List<GroupRequest> groupRequestList = new ArrayList<>();
-        while(resultSet.next()){
-            GroupRequest groupRequest = new GroupRequest();
-            groupRequest.setgID(resultSet.getInt("gID"));
-            groupRequest.setUserID(resultSet.getInt("userID"));
-            groupRequest.setRequestText(resultSet.getString("requestText"));
-            groupRequest.setRequestTime(resultSet.getDate("requestTime"));
-            groupRequestList.add(groupRequest);
-        }
-
-        int responseCode = Dashboard.displayGroupRequests(groupRequestList);
-        if(responseCode==-1){
-            System.out.println("No Pending Group Membership Requests");
-            return -1;
-        }
-
-
-        HashMap<Integer, List<Integer>> groupAndToAcceptMapping = Dashboard.getGroupRequestsToAdd(groupRequestList);
+//        HashMap<Integer, List<Integer>> groupAndToAcceptMapping = Dashboard.getGroupRequestsToAdd(groupRequestList);
         int numToAdd = groupAndToAcceptMapping.size();
         if(numToAdd==0){
             System.out.println("No new group members were added. Requests deleted!");
             return -1;
         }else{
             System.out.println("Adding the selected group members");
-            conn = openConnection();
+            Connection conn = openConnection();
             for(int i : groupAndToAcceptMapping.keySet()){
                 CallableStatement callableStatement = conn.prepareCall("call confirmGroupMembers(?, ?)");
                 callableStatement.setInt(1,i);
@@ -502,7 +465,7 @@ public class BeSocial{
         conn.close();
 
 
-        List<Profile> matchingProfileList = new ArrayList<Profile>();
+        List<Profile> matchingProfileList = new ArrayList<>();
         while(resultSet.next()){
             Profile p = new Profile();
             String response = resultSet.getString("search_user_profiles");
@@ -523,36 +486,36 @@ public class BeSocial{
         return -1;
     }
 
-    public static int sendMessageToUser(int userId) throws SQLException {
+    public static int sendMessageToUser(int userId, String message) throws SQLException {
         if(currentAccount==null) return -1;
 
+//        Connection conn = openConnection();
+//        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
+//        preparedStatement.setInt(1, currentAccount.getUserID());
+//        preparedStatement.setInt(2, userId);
+//        ResultSet rs = preparedStatement.executeQuery();
+//        conn.close();
+//
+//        int friends;
+//        if (rs.next()) {
+//            friends = rs.getInt(1);
+//            if(friends==-1){
+//                System.out.println("You are not friends with this user.");
+//                return -1;
+//            }
+//        }
+
         Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
-        preparedStatement.setInt(1, currentAccount.getUserID());
-        preparedStatement.setInt(2, userId);
-        ResultSet rs = preparedStatement.executeQuery();
-        conn.close();
-
-        int friends=0;
-        if (rs.next()) {
-            friends = rs.getInt(1);
-            if(friends==-1){
-                System.out.println("You are not friends with this user.");
-                return -1;
-            }
-        }
-
-        conn = openConnection();
-        preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
                 "userID=?");
         preparedStatement.setInt(1, userId);
         ResultSet response  = preparedStatement.executeQuery();
         conn.close();
 
-        String name = null;
+        String name;
         if (response.next()){
             name = response.getString("name");
-            String message = Dashboard.sendMessageInput(name);
+            //String message = Dashboard.sendMessageInput(name);
 
             if(message!=null){
                 conn = openConnection();
@@ -567,50 +530,26 @@ public class BeSocial{
                 return 1;
             }
             System.out.println("Message not sent.");
-            return -1;
         }else{
             System.out.println("That userID wasn't found. Message send failed.");
-            return -1;
         }
-
+        return -1;
     }
 
-    public static int sendMessageToGroup(int gID) throws SQLException {
+    public static int sendMessageToGroup(int gID, String message) throws SQLException {
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkGroupMemberExists(?, ?)");
-        preparedStatement.setInt(1, currentAccount.getUserID());
-        preparedStatement.setInt(2, gID);
-        ResultSet rs = preparedStatement.executeQuery();
-        conn.close();
-
-        int member=0;
-        if (rs.next()) {
-            member = rs.getInt(1);
-            if(member==-1){
-                System.out.println("You are not a member of this group.");
-                return -1;
-            }
-        }
-
-        conn = openConnection();
-        preparedStatement = conn.prepareStatement("SELECT name FROM GROUPINFO WHERE " +
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT name FROM GROUPINFO WHERE " +
                 "gID=?");
         preparedStatement.setInt(1, gID);
         ResultSet response  = preparedStatement.executeQuery();
         conn.close();
-
-        String name = null;
         if (response.next()){
-            name = response.getString("name");
-            String message = Dashboard.sendMessageInput(name);
-
             if(message!=null){
                 conn = openConnection();
                 CallableStatement callableStatement = conn.prepareCall("call send_message_to_group(?,?,?)");
                 callableStatement.setInt(1, currentAccount.getUserID());
-                System.out.println("setting groupID to: "+ gID);
                 callableStatement.setInt(2, gID);
                 callableStatement.setString(3, message);
                 callableStatement.executeUpdate();
@@ -620,11 +559,10 @@ public class BeSocial{
                 return 1;
             }
             System.out.println("Message not sent.");
-            return -1;
         }else{
             System.out.println("That group wasn't found. Message send failed.");
-            return -1;
         }
+        return -1;
     }
 
     public static int displayMessages() throws SQLException {
@@ -684,7 +622,7 @@ public class BeSocial{
         }
     }
 
-    public static int displayFriends() throws SQLException {
+    public static int displayFriends(boolean flag, String[] inputs) throws SQLException {
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
@@ -705,7 +643,10 @@ public class BeSocial{
             System.out.println("You don't have any friends.");
             return -1;
         }
-
+        if(flag){
+            Dashboard.startViewFriendsOrExitTest(friendslist, inputs);
+            return 1;
+        }
         Dashboard.viewFriendsOrExit(friendslist);
 
         return 1;
@@ -720,7 +661,7 @@ public class BeSocial{
 
         conn.close();
 
-        List<GroupProfile> listOfGroups = new ArrayList();
+        List<GroupProfile> listOfGroups = new ArrayList<>();
 
         while(rs.next()){
             GroupProfile g = new GroupProfile();
@@ -729,18 +670,13 @@ public class BeSocial{
             listOfGroups.add(g);
         }
 
-        int result = Dashboard.displayListOfGroups(listOfGroups);
-        if(result == -1){
-            System.out.println("There are no groups in the system.");
-        }
-        return -1;
+        return Dashboard.displayListOfGroups(listOfGroups);
     }
 
     public static int rankProfiles() throws SQLException {
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
-        //TODO: Fill in the function name below
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM rank_profiles()");
         ResultSet rs = preparedStatement.executeQuery();
         conn.close();
@@ -749,7 +685,6 @@ public class BeSocial{
 
         while(rs.next()){
             Profile p = new Profile();
-            //TODO: You might have to replace the column names here
             p.setUserID(rs.getInt("userID"));
             p.setCountOfSomething(rs.getInt("num_friends"));
             listOfProfiles.add(p);
@@ -816,32 +751,24 @@ public class BeSocial{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
-        //TODO: Fill in the function name below
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM threeDegrees(?,?)");
         preparedStatement.setInt(1, currentAccount.getUserID());
         preparedStatement.setInt(2, searchingForID);
         ResultSet rs = preparedStatement.executeQuery();
         conn.close();
 
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columnCount = metaData.getColumnCount();
-        System.out.println("Number of columns: " + columnCount);
-
-        for (int i = 1; i <= columnCount; i++) {
-            String columnName = metaData.getColumnName(i);
-            System.out.print(columnName + "\t");
-        }
-        System.out.println();
-
+        Integer[] values=null;
         while (rs.next()) {
-            Integer[] values = (Integer[]) rs.getArray(1).getArray();
-            for (int i = 0; i < values.length; i++) {
-                System.out.print(values[i] + "\t");
-            }
-            System.out.println();
+            values = (Integer[]) rs.getArray(1).getArray();
+        }
+        if (values!=null){
+            Dashboard.displayConnectionsTree(values);
+        }else{
+            System.out.println("There are no connections within 3 hops.");
+            return -1;
         }
 
-        return -1;
+        return 1;
     }
 
     public static int logout() throws SQLException {
@@ -866,6 +793,118 @@ public class BeSocial{
         return null;
     }
 
+    public static String getName(int userID) throws SQLException{
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+                "userID=?");
+        preparedStatement.setInt(1, userID);
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        String name;
+        if (response.next()) {
+            name = response.getString("name");
+            return name;
+        }
+        return null;
+    }
+    public static List<FriendRequest> generateFriendReqList() throws SQLException {
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        List<FriendRequest> friendRequestList = new ArrayList<>();
+        while(response.next()){
+            FriendRequest friendRequest = new FriendRequest();
+            friendRequest.setUserID1(response.getInt("userID1"));
+            friendRequest.setUserID2(currentAccount.getUserID());
+            friendRequest.setRequestText(response.getString("requestText"));
+            friendRequestList.add(friendRequest);
+        }
+        return friendRequestList;
+    }
+    public static List<GroupRequest> generateGroupReqList() throws SQLException{
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM get_pending_members(?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet resultSet = preparedStatement.executeQuery();
+        conn.close();
+
+        List<GroupRequest> groupRequestList = new ArrayList<>();
+        while(resultSet.next()){
+            GroupRequest groupRequest = new GroupRequest();
+            groupRequest.setgID(resultSet.getInt("gID"));
+            groupRequest.setUserID(resultSet.getInt("userID"));
+            groupRequest.setRequestText(resultSet.getString("requestText"));
+            groupRequest.setRequestTime(resultSet.getDate("requestTime"));
+            groupRequestList.add(groupRequest);
+        }
+        return groupRequestList;
+    }
+    public static String checkFriendsGetName(int userID) throws SQLException{
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkFriendshipExists(?, ?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, userID);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        int friends;
+        if (rs.next()) {
+            friends = rs.getInt(1);
+            if(friends==-1){
+                System.out.println("You are not friends with this user.");
+                return null;
+            }else{
+                conn = openConnection();
+                preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+                        "userID=?");
+                preparedStatement.setInt(1, userID);
+                ResultSet response  = preparedStatement.executeQuery();
+                conn.close();
+
+                if (response.next()){
+                    return response.getString("name");
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
+    public static String checkGroupMemGetName(int gID) throws SQLException {
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkGroupMemberExists(?, ?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, gID);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        int member;
+        if (rs.next()) {
+            member = rs.getInt(1);
+            if(member==-1){
+                System.out.println("You are not a member of this group.");
+                return null;
+            }
+        }
+
+        conn = openConnection();
+        preparedStatement = conn.prepareStatement("SELECT name FROM GROUPINFO WHERE " +
+                "gID=?");
+        preparedStatement.setInt(1, gID);
+        rs = preparedStatement.executeQuery();
+        conn.close();
+
+        if (rs.next()){
+            return rs.getString("name");
+        }else{
+            return null;
+        }
+    }
+
 
     public static class Profile {
         private int userID;
@@ -875,15 +914,6 @@ public class BeSocial{
         private Date dateOfBirth;
         private Date lastLogin;
         private int countOfSomething;
-
-        public Profile(int userID, String name, String email, String password, Date dateOfBirth, Date lastLogin) {
-            this.userID = userID;
-            this.name = name;
-            this.email = email;
-            this.password = password;
-            this.dateOfBirth = dateOfBirth;
-            this.lastLogin = lastLogin;
-        }
 
         public int getCountOfSomething() {
             return countOfSomething;
@@ -951,11 +981,9 @@ public class BeSocial{
         }
 
         public boolean isAdmin() {
-            if(this.name.equals("admin") &&
-                    this.email.equals("admin@besocial.com")&&
-                    this.password.equals("admin")
-            ) return true;
-            return false;
+            return this.name.equals("admin") &&
+                    this.email.equals("admin@besocial.com") &&
+                    this.password.equals("admin");
         }
     }
     public static class FriendRequest{
@@ -964,11 +992,6 @@ public class BeSocial{
         private String requestText;
 
         public FriendRequest() {
-        }
-
-        public FriendRequest(int userID1, String requestText) {
-            UserID1 = userID1;
-            this.requestText = requestText;
         }
 
         public int getUserID1() {
@@ -1102,7 +1125,7 @@ public class BeSocial{
 
         //code for createProfile--------------------------------------------------------
         private static void startCreateProfile() throws SQLException {
-            if(currentAccount==null || (currentAccount!=null && !currentAccount.isAdmin())){
+            if(currentAccount == null || !currentAccount.isAdmin()){
                 System.out.println("You do not have permission to perform this operation.");
                 return;
             }
@@ -1112,12 +1135,12 @@ public class BeSocial{
             if(response == -1){
                 System.out.println("Profile creation failed... returning to menu!");
             }else{
-                System.out.printf("The new profile has been created with ID %n\n", response);
+                System.out.printf("The new profile has been created with ID %d\n", response);
             }
         }
         private static List<String> getProfileDetails(){
             List<String> response = new ArrayList<>(2);
-            System.out.printf("To create a new profile, enter the details below.\n");
+            System.out.println("To create a new profile, enter the details below.");
             System.out.print("Name: ");
             response.add(scanner.nextLine().trim());
             System.out.print("Email: ");
@@ -1135,7 +1158,7 @@ public class BeSocial{
 
         //code for dropProfile-----------------------------------------------------
         private static void startDropProfile() throws SQLException {
-            if(currentAccount==null || (currentAccount!=null && !currentAccount.isAdmin())){
+            if(currentAccount == null || !currentAccount.isAdmin()){
                 System.out.println("You do not have permission to perform this operation.");
                 return;
             }
@@ -1145,14 +1168,13 @@ public class BeSocial{
             if(response == -1){
                 System.out.println("Drop profile creation failed... returning to menu!");
             }else{
-                System.out.printf("The user with email %s and ID %n has been removed\n", email, response);
+                System.out.printf("The user with email %s and ID %d has been removed\n", email, response);
             }
         }
         private static String getEmail(){
-            System.out.printf("To drop a profile, enter the email below.\n");
+            System.out.print("To drop a profile, enter the email below.\n");
             System.out.print("Email: ");
-            String email = scanner.nextLine().trim();
-            return email;
+            return scanner.nextLine().trim();
         }
         //end code for dropProfile-------------------------------------------------
 
@@ -1170,7 +1192,7 @@ public class BeSocial{
         }
         private static List<String> getLoginDetails(){
             List<String> response = new ArrayList<>(2);
-            System.out.printf("Welcome to BeSocial! Enter your login below.\n");
+            System.out.print("Welcome to BeSocial! Enter your login below.\n");
             System.out.print("Email: ");
             String email = scanner.nextLine().trim();
             response.add(email);
@@ -1186,21 +1208,22 @@ public class BeSocial{
         //code for initiate friend request--------------------------------------------------------
         private static int startInitiateFriendship() throws SQLException {
             int toUserID = getUserID();
-            initiateFriendship(toUserID);
+            String name = getName(toUserID);
+            String message = initiateFriendshipMessage(name);
+            initiateFriendship(toUserID, message);
             return 1;
         }
         private static int getUserID(){
             System.out.print("Enter the UserID of the person you would like to request.\nUserID: ");
             String input = scanner.nextLine().trim();
             try {
-                int userID = Integer.parseInt(input);
-                return userID;
+                return Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("Enter the UserID of the user you would like to request.");
             }
             return -1;
         }
-        private static String initiateFriendshipMessage(String name){
+        public static String initiateFriendshipMessage(String name){
             System.out.printf("You are sending a friend request to %s. Enter your message below.\n", name);
             System.out.print("Message: ");
             String message = scanner.nextLine();
@@ -1219,10 +1242,14 @@ public class BeSocial{
 
         //code for confirm friend request--------------------------------------------------------
         private static void startConfirmFriendRequest() throws SQLException {
-            confirmFriendRequests();
-            return;
+            List<FriendRequest> frl = generateFriendReqList();
+            if (displayFriendRequests(frl)!=-1){
+                Integer[] toAdd = getFriendsToAdd(frl);
+                confirmFriendRequests(toAdd);
+            }
         }
         public static int displayFriendRequests(List<FriendRequest> response) {
+
             if(response.size()==0){
                 System.out.println("No Pending Friend Requests");
                 return -1;
@@ -1247,12 +1274,12 @@ public class BeSocial{
             while (!done) {
                 System.out.print("Enter a request number to accept (or 'ALL' for all or 'DONE' to stop): ");
                 String input = scanner.nextLine().trim().toUpperCase();
-                int cur=0;
+
                 switch (input) {
                     case "ALL":
                         newList.clear();
-                        for (int i = 0; i < MAX_NUM; i++) {
-                            newList.add(friendRequestList.get(i).getUserID1());
+                        for (FriendRequest friendRequest : friendRequestList) {
+                            newList.add(friendRequest.getUserID1());
                         }
                         System.out.println("Accepted all requests.");
                         break;
@@ -1264,7 +1291,6 @@ public class BeSocial{
                             int requestNumber = Integer.parseInt(input);
                             if (requestNumber >= 1 && requestNumber <= MAX_NUM) {
                                 newList.add(friendRequestList.get(requestNumber-1).getUserID1());
-                                //toAdd[cur++]=friendRequestList.get(requestNumber-1).getUserID1(); //-1 since it will correspond to the index in caller
                                 System.out.printf("Added request %d, UserID: %d.\n", requestNumber, friendRequestList.get(requestNumber-1).getUserID1());
                             } else {
                                 System.out.printf("Request number must be between 1 and %d.%n", friendRequestList.size());
@@ -1311,10 +1337,10 @@ public class BeSocial{
 
             List<String> inputDetails = getGroupReqDetails();
             while(inputDetails.size()!=2){
-                System.out.println("Your reqest was invalid. Try again.");
+                System.out.println("Your request was invalid. Try again.");
                 inputDetails = getGroupReqDetails();
             }
-            int groupId=-1;
+            int groupId;
             try{
                 groupId = Integer.parseInt(inputDetails.get(0));
                 initiateAddingGroup(groupId, inputDetails.get(1));
@@ -1344,7 +1370,12 @@ public class BeSocial{
 
         //code for confirm group member----------------------------------------------------
         public static void startConfirmGroupMembership() throws SQLException {
-            confirmGroupMembership();
+            List<GroupRequest> grl = generateGroupReqList();
+            if(displayGroupRequests(grl)!=-1){
+                HashMap<Integer, List<Integer>> response = getGroupRequestsToAdd(grl);
+                confirmGroupMembership(response);
+            }
+
         }
         public static int displayGroupRequests(List<GroupRequest> response) {
             if(response.size()==0){
@@ -1429,8 +1460,7 @@ public class BeSocial{
             System.out.print("Enter the GroupID of the group you would like to leave.\nGroupID: ");
             String input = scanner.nextLine().trim();
             try {
-                int gID = Integer.parseInt(input);
-                return gID;
+                return Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("Enter the GroupID of the group you would like to leave.");
             }
@@ -1443,6 +1473,7 @@ public class BeSocial{
         //code for search for profile -------------------------------------------------
         public static void startSearchForProfile() throws SQLException {
             searchForProfile(getSearchString());
+            waitForEnterToContinue();
         }
         public static String getSearchString() {
             System.out.println("Search for a user by their name or email. Separate your search words with a space.");
@@ -1460,8 +1491,8 @@ public class BeSocial{
             }
             System.out.println("+----------+--------------------------+");
 
-            System.out.print("Press enter when you are done viewing the results.");
-            scanner.nextLine();
+//            System.out.print("Press enter when you are done viewing the results.");
+//            scanner.nextLine();
         }
         //end code for search for profile -------------------------------------------------
 
@@ -1469,14 +1500,18 @@ public class BeSocial{
 
         //code for send Message To User -------------------------------------------------
         public static void startSendMessageToUser() throws SQLException {
-            sendMessageToUser(getRecipUserID());
+            int toUserID = getUserID();
+            String name;
+            if((name=checkFriendsGetName(toUserID))!=null){
+                String message = sendMessageInput(name);
+                sendMessageToUser(toUserID, message);
+            }
         }
         private static int getRecipUserID(){
             System.out.print("Enter the UserID of the person you would like send a message to.\nUserID: ");
             String input = scanner.nextLine().trim();
             try {
-                int userID = Integer.parseInt(input);
-                return userID;
+                return Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("Enter the UserID of the person you would like send a message to.");
             }
@@ -1501,14 +1536,18 @@ public class BeSocial{
 
         //code for send Message To Group -------------------------------------------------
         public static void startSendMessageToGroup() throws SQLException {
-            sendMessageToGroup(getRecipGroupID());
+            int groupID = getRecipGroupID();
+            String name;
+            if((name=checkGroupMemGetName(groupID))!=null){
+                String message = sendMessageInput(name);
+                sendMessageToGroup(groupID, message);
+            }
         }
         private static int getRecipGroupID(){
             System.out.print("Enter the GroupID of the group you would like send a message to.\nGroupID: ");
             String input = scanner.nextLine().trim();
             try {
-                int groupID = Integer.parseInt(input);
-                return groupID;
+                return Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("Enter the GroupID of the group you would like send a message to.");
             }
@@ -1521,6 +1560,7 @@ public class BeSocial{
         //code for Display Messages -------------------------------------------------
         public static void startDisplayMessages() throws SQLException {
             displayMessages();
+            waitForEnterToContinue();
         }
         public static int displayMSGsToUser(List<Message> messagesList) {
             if(messagesList.size()==0) return -1;
@@ -1546,8 +1586,8 @@ public class BeSocial{
             }
             System.out.println("+----------+--------------------------+------------------+");
 
-            System.out.print("Press enter when you are done viewing the results.");
-            scanner.nextLine();
+//            System.out.print("Press enter when you are done viewing the results.");
+//            scanner.nextLine();
             return 1;
         }
         private static String[] splitMessage(String message, int columnWidth) {
@@ -1581,7 +1621,10 @@ public class BeSocial{
 
         //code for Display Friends -------------------------------------------------
         public static void startDisplayFriends() throws SQLException {
-            displayFriends();
+            displayFriends(false, null);
+        }
+        public static void startViewFriendsOrExitTest(List<Profile> friendList, String[] inputs) throws SQLException{
+            viewFriendsOrExit(friendList, inputs);
         }
         public static int displayUsersFriends(List<Profile> friendList) {
             if(friendList.size()==0) return -1;
@@ -1604,7 +1647,6 @@ public class BeSocial{
             String input = scanner.nextLine();
 
             if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")) {
-                return;
             } else {
                 try {
                     int friendID = Integer.parseInt(input);
@@ -1621,9 +1663,27 @@ public class BeSocial{
                 }
             }
         }
-        public static int viewFriendProfile(int userID) throws SQLException {
-            String query = "SELECT * FROM profile WHERE userID = ?";
+        public static void viewFriendsOrExit(List<Profile> friendList, String[] inputs){
+            String input = inputs[0];
 
+            if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("e")) {
+            } else {
+                try {
+                    int friendID = Integer.parseInt(input);
+                    int status = viewFriendProfile(friendID, inputs[1]);
+                    if (status == -1) {
+                        return;
+                    } else if (status == 2) {
+                        displayUsersFriends(friendList);
+                    }
+                    viewFriendsOrExit(friendList); // Recursive call
+                } catch (NumberFormatException | SQLException e) {
+                    System.out.println("You must either enter the User ID or \"EXIT\"!");
+                    viewFriendsOrExit(friendList); // Recursive call
+                }
+            }
+        }
+        public static int viewFriendProfile(int userID) throws SQLException {
             Connection conn = openConnection();
             PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM profile WHERE userID = ?");
             preparedStatement.setInt(1, userID);
@@ -1662,6 +1722,44 @@ public class BeSocial{
             }
             return -1;
         }
+        public static int viewFriendProfile(int userID, String input) throws SQLException {
+            Connection conn = openConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM profile WHERE userID = ?");
+            preparedStatement.setInt(1, userID);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                // Print table header
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+                System.out.println("| User ID    | Name                 | Email                | Date of Birth        | Last Login    |");
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+
+                // Print profile data
+                int profileID = rs.getInt("userID");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                Date dob = rs.getDate("date_of_birth");
+                Timestamp lastLogin = rs.getTimestamp("lastLogin");
+
+                System.out.format("| %-10d | %-20s | %-20s | %-20s | %-14s |%n", profileID, name, email, dob, lastLogin);
+                System.out.println("+------------+----------------------+----------------------+----------------------+---------------+");
+            }
+
+            System.out.println("To return to the list, enter \"RETURN\"\n" +
+                    "To return to the main menu, enter \"QUIT\"");
+            try {
+                if (input.equalsIgnoreCase("RETURN") || input.equalsIgnoreCase("r")) {
+                    return 2;
+                } else if (input.equalsIgnoreCase("QUIT") || input.equalsIgnoreCase("q")) {
+                    return -1;
+                }
+            }catch(Exception e){
+                System.out.println("Invalid input. Try Again");
+                System.out.println("To return to the list, enter \"RETURN\"\n" +
+                        "To return to the main menu, enter \"QUIT\"");
+            }
+            return -1;
+        }
         //end code for Display Friends -------------------------------------------------
 
 
@@ -1669,9 +1767,13 @@ public class BeSocial{
         //code for Rank Groups -------------------------------------------------
         public static void startRankGroups() throws SQLException {
             rankGroups();
+            waitForEnterToContinue();
         }
         public static int displayListOfGroups(List<GroupProfile> listOfGroups) {
-            if (listOfGroups.size() == 0) return -1;
+            if (listOfGroups.size() == 0){
+                System.out.println("There are no groups in the system.");
+                return -1;
+            }
 
             System.out.println("+--------+--------------------+");
             System.out.println("| GroupID| Num Members        |");
@@ -1682,10 +1784,13 @@ public class BeSocial{
                 System.out.format("| %-6d | %-18d |%n", gID, groupSize);
             }
             System.out.println("+--------+--------------------+");
+//            System.out.print("Press enter to return when you are done.");
+//            scanner.nextLine();
+            return 1;
+        }
+        public static void waitForEnterToContinue(){
             System.out.print("Press enter to return when you are done.");
             scanner.nextLine();
-
-            return 1;
         }
         //end code for Rank Groups -------------------------------------------------
 
@@ -1695,24 +1800,9 @@ public class BeSocial{
         //code for Rank Profiles -------------------------------------------------
         public static void startRankProfiles() throws SQLException {
             rankProfiles();
+            waitForEnterToContinue();
         }
-//        public static int displayListOfProfiles(List<Profile> listOfProfiles) {
-//            if (listOfProfiles.size() == 0) return -1;
-//
-//            System.out.println("+--------+----------------------+");
-//            System.out.println("| User ID| Number of Friends    |");
-//            System.out.println("+--------+----------------------+");
-//            for (Profile p : listOfProfiles) {
-//                int userID = p.getUserID();
-//                int numFriends = p.getCountOfSomething();
-//                System.out.format("| %-6d | %-20d |%n", userID, numFriends);
-//            }
-//            System.out.println("+--------+----------------------+");
-//            System.out.print("Press enter to return when you are done.");
-//            scanner.nextLine();
-//
-//            return 1;
-//        }
+
         public static int displayListOfProfiles(List<Profile> listOfProfiles, String columnName) {
             if (listOfProfiles.size() == 0) return -1;
 
@@ -1726,8 +1816,8 @@ public class BeSocial{
                 System.out.format("| %-6d | %-"+ columnWidth +"d |%n", userID, numFriends);
             }
             System.out.println("+--------+----------------------+");
-            System.out.print("Press enter to return when you are done.");
-            scanner.nextLine();
+//            System.out.print("Press enter to return when you are done.");
+//            scanner.nextLine();
 
             return 1;
         }
@@ -1743,9 +1833,9 @@ public class BeSocial{
         public static List<Integer> getInputTopMessages(){
             List<Integer> toReturn = new ArrayList<>(2);
 
-            System.out.println("To see the top \'k\' users with respect to the number of messages sent in past" +
-                    "\'x\' months. ");
-            System.out.println("");
+            System.out.println("To see the top 'k' users with respect to the number of messages sent in past" +
+                    "'x' months. ");
+            System.out.println();
 
 
             try{
@@ -1774,19 +1864,21 @@ public class BeSocial{
         //code for Three Degrees -------------------------------------------------
         public static void startThreeDegrees() throws SQLException {
             threeDegrees(getSearchForId());
+            waitForEnterToContinue();
+
         }
         public static int getSearchForId(){
             System.out.println("Welcome to Three Degree!");
             System.out.println("Find out if there is a connection between you and another user within three levels" +
                     "between your mutual friends.");
             System.out.println("Enter the User ID of the friend you want to search to or \"EXIT\" to return.");
-            System.out.println("User ID: ");
+            System.out.print("User ID: ");
             String input = scanner.nextLine();
 
             if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("E") ) {
                 return -1;
             } else {
-                int searchingUserId = 0;
+                int searchingUserId;
                 try {
                     searchingUserId = Integer.parseInt(input);
                     return searchingUserId;
@@ -1795,6 +1887,21 @@ public class BeSocial{
                 }
             }
             return -1;
+        }
+
+        public static void displayConnectionsTree(Integer[] values) {
+            System.out.println("\n\n---Your Connection Path---");
+            System.out.printf("A path was found in %d hops!\n", values.length-1);
+
+            for (int i = 0; i < values.length; i++) {
+                System.out.print(values[i]);
+                if (i < values.length -1) {
+                    System.out.print(" --> ");
+                }
+            }
+
+//            System.out.print("\n\nPress enter to return when you are done.");
+//            scanner.nextLine();
         }
         //end code for Three Degrees -------------------------------------------------
 
