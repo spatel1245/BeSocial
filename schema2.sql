@@ -153,6 +153,7 @@ ALTER TABLE message
 INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
 
 
+INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
 
 
 
