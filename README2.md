@@ -45,7 +45,7 @@ For Windows:
       or
       java -cp "postgresql-42.6.0.jar;." BeSocial
       
-      Select whichever is appropriate for your system. Driver is the auto-test file and BeSocial is manual interration.
+      Select whichever is appropriate for your system. Driver is the auto-test file and BeSocial is manual interaction.
 ```
 
 ## Before you log in:
