@@ -10,6 +10,11 @@
 
 # HOW TO USE BeSocial:
 
+<br>
+
+```
+BUILD and RUN the BeSocial.java file
+```
 
 ## Before you log in:
  
@@ -537,7 +542,7 @@ This option should cleanly shut down and exit the program.
  
 <br>
  
- **BEFORE YOU RUN THE DRIVER:** Run the Schema.sql and Trigger.sql files before running the Driver file.
+ **BEFORE YOU RUN THE driver.java file:** Run the Schema.sql and Trigger.sql files before running the Driver file.
  
 <br>
 
