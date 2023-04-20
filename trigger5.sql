@@ -26,7 +26,7 @@ AS $$
 BEGIN
     IF(NEW.toGroupID is null)
     THEN
-        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.touserid);
+        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.fromid);
         Return new;
     ELSE
 
@@ -86,6 +86,7 @@ BEGIN
                 if(curSize<sizelimit) THEN
                     INSERT INTO groupmember (gID, userid, role,lastconfirmed) values (rec_updateGroup.gid, rec_updateGroup.userID, 'member', old.lastconfirmed);
                     DELETE FROM pendinggroupmember WHERE rec_updateGroup.userid=pendinggroupmember.userid AND rec_updateGroup.gid=pendinggroupmember.gid;
+
                     SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
                     SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
                 end if;
@@ -236,8 +237,9 @@ CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description v
 AS $$
 DECLARE
     group_id integer;
+    time timestamp;
 BEGIN
-
+    SELECT pseudo_time FROM clock LIMIT 1 INTO time;
     INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
     SELECT last_value(gid)
            OVER (ORDER BY gid ASC
@@ -245,11 +247,12 @@ BEGIN
     INTO group_id
     FROM groupinfo;
 
-    INSERT INTO groupmember VALUES (group_id, userid, 'manager', now());
+    INSERT INTO groupmember VALUES (group_id, userid, 'manager', time);
 
 END;
 $$ LANGUAGE plpgsql;
 
+call creategroup('ben', 5, 'test',1);
 -----------------------------------------------------------------
 --END PROCEDURE 1 createGROUP
 -----------------------------------------------------------------
@@ -330,22 +333,22 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --Begin FUNCTION 5 leaveGroup
 -----------------------------------------------------------------
--- CREATE OR REPLACE FUNCTION leaveGroup(group_id integer, user_id integer)
--- RETURNS integer AS $$
--- DECLARE
---     match_found integer;
--- BEGIN
---     DELETE FROM groupmember
---     WHERE groupmember.gid = group_id AND groupmember.userid = user_id
---     RETURNING 1 INTO match_found;
---
---     IF FOUND THEN
---         RETURN match_found;
---     ELSE
---         RETURN -1;
---     END IF;
--- END;
--- $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION leaveGroup(group_id integer, user_id integer)
+RETURNS integer AS $$
+DECLARE
+    match_found integer;
+BEGIN
+    DELETE FROM groupmember
+    WHERE groupmember.gid = group_id AND groupmember.userid = user_id
+    RETURNING 1 INTO match_found;
+
+    IF FOUND THEN
+        RETURN match_found;
+    ELSE
+        RETURN -1;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
 --END FUNCTION 5 confirmGroupMembers
@@ -482,82 +485,37 @@ $$ LANGUAGE plpgsql;
 --END FUNCTION 4 SendMessageToGroup
 -----------------------------------------------------------------
 
-
--- CREATE OR REPLACE VIEW friend_display
---     AS
---              SELECT userid2,
---             profile.name
---              FROM friend
---              INNER JOIN profile ON friend.userID2=profile.userID;
-
--- CREATE OR REPLACE FUNCTION displayFriends(userid integer)
---     RETURNS SETOF friend AS $$
--- BEGIN
---     EXECUTE 'CREATE OR REPLACE VIEW friend_display AS
---              SELECT userid2, profile.name
---              FROM friend
---              INNER JOIN profile ON friend.userID2=profile.userID
---             WHERE userid1 = ' || userid||';';
---     RETURN QUERY SELECT * FROM friend_display;
--- END;
--- $$ LANGUAGE plpgsql;
---
--- CREATE OR REPLACE FUNCTION display_friends(userid integer)
---     RETURNS TABLE (name VARCHAR(50), userID INTEGER) AS $$
--- BEGIN
---     RETURN QUERY
---         SELECT userId2, name FROM profile
---         UNION
---         SELECT col1, col2 FROM table2;
--- END;
--- $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
---BEGIN FUNCTION 5 listOfFriend IDS
+--BEGIN FUNCTION 5 displayFriends
 -----------------------------------------------------------------
 
+CREATE OR REPLACE VIEW friend_display
+    AS
+             SELECT userid2,
+            profile.name
+             FROM friend
+             INNER JOIN profile ON friend.userID2=profile.userID;
 
-
-DROP FUNCTION IF EXISTS list_of_friend_IDs(_userID integer);
-
-CREATE OR REPLACE FUNCTION list_of_friend_IDs(_userID integer)
-    RETURNS TABLE (userID integer) AS $$
+CREATE OR REPLACE FUNCTION displayFriends(userid integer)
+    RETURNS SETOF friend AS $$
 BEGIN
-    RETURN QUERY
-        SELECT f.userid2 FROM friend f WHERE f.userID1 = _userID
-        UNION
-        SELECT f.userid1 FROM friend f WHERE f.userID2 = _userID;
+    EXECUTE 'CREATE OR REPLACE VIEW friend_display AS
+             SELECT userid2, profile.name
+             FROM friend
+             INNER JOIN profile ON friend.userID2=profile.userID
+            WHERE userid1 = ' || userid||';';
+    RETURN QUERY SELECT * FROM friend_display;
 END;
 $$ LANGUAGE plpgsql;
 
------------------------------------------------------------------
---END FUNCTION 5 listOfFreind IDS
------------------------------------------------------------------
+
 
 -----------------------------------------------------------------
---BEGIN FUNCTION 6 Display_Friends
------------------------------------------------------------------
-
-
-
-DROP FUNCTION IF EXISTS display_friends();
-
-CREATE OR REPLACE FUNCTION display_friends(_userID integer)
-    RETURNS SETOF profile AS $$
-DECLARE
-    friendIDs INTEGER[];
-BEGIN
-    SELECT ARRAY_AGG(userID) INTO friendIDs FROM list_of_friend_IDs(_userID);
-    RETURN QUERY
-        SELECT * FROM profile WHERE profile.userID = ANY(friendIDs);
-END;
-$$ LANGUAGE plpgsql;
-
------------------------------------------------------------------
---END FUNCTION 6 DisplayFriends
+--END FUNCTION 5 displayFriends
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---BEGIN FUNCTION 7 Detail_friend
+--BEGIN FUNCTION 6 Detail_friend
 -----------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION displayDetailFriend(user_id integer)
@@ -569,143 +527,120 @@ END;
 $$ LANGUAGE plpgsql;
 
 -----------------------------------------------------------------
---END FUNCTION 7 Detail_friend
+--END FUNCTION 6 Detail_friend
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---BEGIN FUNCTION 8 Return Ranked Groups
+--BEGIN FUNCTION 7 Return Ranked Groups
 -----------------------------------------------------------------
+CREATE OR REPLACE VIEW groups_size_ranked
+    AS
+            SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
 
-DROP FUNCTION group_size_ranked();
-CREATE OR REPLACE FUNCTION group_size_ranked()
+DROP FUNCTION group_size_Ranked();
+CREATE OR REPLACE FUNCTION group_size_Ranked()
     RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
      RETURN QUERY
-        SELECT groupinfo.gid, COUNT(userID)::integer
-        FROM groupmember
-            JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+        SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
+END;
+$$ LANGUAGE plpgsql;
+CREATE OR REPLACE VIEW groups_size_ranked
+    AS
+            SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
+            GROUP BY groupinfo.gid
+            ORDER BY COUNT(userID) DESC;
+
+
+CREATE OR REPLACE FUNCTION group_size_Ranked()
+    RETURNS TABLE (group_id integer, total integer) AS $$
+BEGIN
+     RETURN QUERY
+        SELECT COUNT(userID), groupinfo.gid
+            FROM groupmember
+            INNER JOIN  groupinfo ON groupinfo.gid=groupmember.gid
             GROUP BY groupinfo.gid
             ORDER BY COUNT(userID) DESC;
 END;
 $$ LANGUAGE plpgsql;
 
-----------------------------------------------------------------
---END FUNCTION 8Return Ranked Groups
------------------------------------------------------------------
+SELECT * FROM group_size_Ranked();
 
------------------------------------------------------------------
---START  FUNCTION 8 Return Ranked Friends
------------------------------------------------------------------
--- CREATE OR REPLACE VIEW rank_friends
--- AS
--- select user, count(*) Total
--- from
--- (
---   select userid1 as user
---   from friend as
---   union all
---   select userid2 as user
---   from friend
--- )
--- group by user
--- order by total desc;
--- CREATE OR REPLACE FUNCTION rank_friends(user_id integer)
---     RETURNS SETOF groupinfo AS $$
--- BEGIN
---      EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
---             SELECT COUNT(userID), groupmember.gid
---             FROM groupmember
---             INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
---             GROUP BY gid
---             ORDER BY COUNT(groupmember.userID) DESC;';
---     RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
--- END;
--- $$ LANGUAGE plpgsql;
--- -----------------------------------------------------------------
---END FUNCTION 8 Return Ranked Friends
------------------------------------------------------------------
-
-
-
-
------------------------------------------------------------------
---START  FUNCTION 9 Display Messages
------------------------------------------------------------------
-DROP FUNCTION IF EXISTS display_messages;
-CREATE OR REPLACE FUNCTION display_messages(user_id INTEGER)
-    RETURNS SETOF message
-AS $$
-BEGIN
-    RETURN QUERY -- allows for the returned table to "communicate" with the tables we have
-        SELECT
-            m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
-        FROM
-            message m JOIN messageRecipient r ON m.msgID = r.msgID
-        WHERE
-                r.userID = user_id
-        ORDER BY
-            timeSent DESC;
-END;
-$$ LANGUAGE plpgsql;
--- -----------------------------------------------------------------
---END FUNCTION 9 Display Messages
------------------------------------------------------------------
-
-
-
-
--- -----------------------------------------------------------------
---END FUNCTION 10 Display NEW Messages
------------------------------------------------------------------
-
-DROP FUNCTION IF EXISTS display_new_messages(integer);
-CREATE OR REPLACE FUNCTION display_new_messages(user_id INTEGER)
-    RETURNS SETOF message
-AS $$
+DROP FUNCTION IF EXISTS rank_profiles();
+CREATE OR REPLACE FUNCTION rank_profiles()
+RETURNS TABLE (
+    userID INTEGER,
+    num_friends BIGINT --BECAUSE COUNT IS OF TYPE BIGINT
+) AS $$
 BEGIN
     RETURN QUERY
-        SELECT
-            m.msgid, m.fromid, m.messagebody, m.touserid, m.togroupid, m.timesent
-        FROM
-            message m
-                JOIN messageRecipient r ON m.msgID = r.msgID
-                JOIN profile p ON m.fromID = p.userID
-        WHERE
-                r.userID = user_id
-          AND m.timeSent > (SELECT lastLogin FROM profile p WHERE p.userID = user_id)
-        ORDER BY
-            timeSent DESC;
+        SELECT profile.userID, COUNT(friend.userID1) AS num_friends
+        FROM profile
+        LEFT JOIN friend ON friend.userID1 = profile.userID OR friend.userID2 = profile.userID
+        GROUP BY profile.userID
+        ORDER BY num_friends DESC;
 END;
 $$ LANGUAGE plpgsql;
 
--- -----------------------------------------------------------------
---END FUNCTION 10 Display NEW Messages
------------------------------------------------------------------
 
+DROP TABLE IF EXISTS temp1;
+CREATE TABLE temp1(userid1 integer, userid2 integer);
 
+DROP FUNCTION IF EXISTS addTemp1();
+CREATE OR REPLACE FUNCTION addTemp1()
+RETURNS TABLE (
+    userID1 INTEGER,
+    userID2 INTEGER --BECAUSE COUNT IS OF TYPE BIGINT
+) AS $$
+DECLARE
+    rec_temporaryAdd RECORD;
 
-
-
--- -----------------------------------------------------------------
---START FUNCTION 11 Check if Two Users are Friends
------------------------------------------------------------------
--- CHECK FOR IF USERS ARE FRIENDS:
-DROP FUNCTION IF EXISTS checkFriendshipExists(integer, integer);
-
-CREATE OR REPLACE FUNCTION checkFriendshipExists(userID1 INTEGER, userID2 INTEGER)
-    RETURNS integer AS $$
 BEGIN
-    IF EXISTS (SELECT * FROM friend WHERE (friend.userID1 = $1 AND friend.userID2 = $2) OR (friend.userID1 = $2 AND friend.userID2 = $1)) THEN
-        RETURN 1;
-    ELSE
-        RETURN -1;
-    END IF;
-END;
+    DROP TABLE IF EXISTS t1;
+    CREATE TEMPORARY TABLE t1(userid1 integer, userid2 integer);
+FOR rec_temporaryAdd IN SELECT
+        g1.gid, g1.userid AS userid1, g2.userid AS userid2
+    FROM
+        groupmember g1
+    LEFT JOIN groupmember g2 on g1.gid=g2.gid
+    WHERE g2.userid != g1.userid AND g1.userid<g2.userid
+    ORDER BY
+        g1.gid
+LOOP
+    INSERT INTO t1 VALUES(rec_temporaryAdd.userid1,rec_temporaryAdd.userid2);
+
+
+    end loop;
+
+FOR rec_temporaryAdd IN SELECT
+        friend.userid1 AS u1, friend.userid2 AS u2
+    FROM
+        friend
+LOOP
+    INSERT INTO t1 VALUES(rec_temporaryAdd.u1,rec_temporaryAdd.u2);
+ end loop;
+
+
+    RETURN QUERY
+    SELECT * FROM t1;
+
+    END;
 $$ LANGUAGE plpgsql;
 
--- -----------------------------------------------------------------
---START FUNCTION 11 Rank Profile
------------------------------------------------------------------
+SELECT * From addTemp1();
+
+
+DROP FUNCTION IF EXISTS rank_profiles();
 CREATE OR REPLACE FUNCTION rank_profiles()
 RETURNS TABLE (
     userID INTEGER,
@@ -757,63 +692,50 @@ END;
 END;
 $$ LANGUAGE plpgsql;
 
--- -----------------------------------------------------------------
---END FUNCTION 11 Rank Profile
+SELECT * FROM rank_profiles();
+
+
+
+
+DROP TABLE temp1;
+
+
+
+
+
+
+-----------------------------------------------------------------
+--END FUNCTION 7 Return Ranked Groups
 -----------------------------------------------------------------
 
-
--- -----------------------------------------------------------------
---START FUNCTION 12 Check if Member is in Group
 -----------------------------------------------------------------
-DROP FUNCTION IF EXISTS checkGroupMemberExists;
-
-CREATE OR REPLACE FUNCTION checkGroupMemberExists(userID INTEGER, gID INTEGER)
-    RETURNS integer AS $$
-BEGIN
-    IF EXISTS (SELECT * FROM groupmember WHERE (groupmember.userid = $1 AND groupmember.gid = $2)) THEN
-        RETURN 1;
-    ELSE
-        RETURN -1;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
--- -----------------------------------------------------------------
---END FUNCTION 12 Check if Member is in Group
+--START  FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
-
+-- CREATE OR REPLACE VIEW rank_friends
+-- AS
+-- select user, count(*) Total
+-- from
+-- (
+--   select userid1 as user
+--   from friend as
+--   union all
+--   select userid2 as user
+--   from friend
+-- )
+-- group by user
+-- order by total desc;
+-- CREATE OR REPLACE FUNCTION rank_friends(user_id integer)
+--     RETURNS SETOF groupinfo AS $$
+-- BEGIN
+--      EXECUTE 'CREATE OR REPLACE VIEW group_size_ranked AS
+--             SELECT COUNT(userID), groupmember.gid
+--             FROM groupmember
+--             INNER JOIN groupinfo ON groupinfo.gid=groupmember.gid
+--             GROUP BY gid
+--             ORDER BY COUNT(groupmember.userID) DESC;';
+--     RETURN QUERY SELECT * FROM groups_size_ranked LIMIT 1;
+-- END;
+-- $$ LANGUAGE plpgsql;
 -- -----------------------------------------------------------------
---START FUNCTION 14 Check if Member is in Group
+--END FUNCTION 8 Return Ranked Friends
 -----------------------------------------------------------------
-
-DROP FUNCTION IF EXISTS top_messages(integer, integer, integer);
-CREATE OR REPLACE FUNCTION top_messages(user_ID INTEGER, x INTEGER, k INTEGER)
-RETURNS TABLE (
-    userID INTEGER,
-    num_messages INTEGER -- change the return type to BIGINT
-)
-AS $$
-DECLARE
-    curTime timestamp;
-    month interval;
-BEGIN
-    month:=interval '30 days';
-    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
-    RETURN QUERY
-    SELECT profile.userID, SUM(
-        CASE
-            WHEN message.touserid = user_ID THEN 1
-            ELSE 0
-        END
-    )::INTEGER AS messages
-    FROM profile
-    JOIN message ON profile.userID = message.fromID
---     JOIN clock ON 1 = 1
-    WHERE profile.userID != user_ID
-      AND message.touserid = user_ID
-      AND (message.timesent) >= ((curTime) - (x * month))
-    AND message.timesent <= curTime
-    GROUP BY profile.userID
-    ORDER BY messages DESC
-    LIMIT k;
-END;
-$$ LANGUAGE plpgsql;
