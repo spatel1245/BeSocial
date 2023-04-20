@@ -361,14 +361,16 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN PROCEDURE 6 update_last_login
 -----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS update_last_login(user_ID int);
+CREATE OR REPLACE PROCEDURE update_last_login(user_ID INTEGER)
 
-CREATE OR REPLACE PROCEDURE update_last_login(p_userID INTEGER)
-    LANGUAGE plpgsql
 AS $$
+DECLARE
+    curTime timestamp;
 BEGIN
-    UPDATE profile SET lastLogin = NOW() WHERE userID = p_userID;
+    UPDATE profile SET lastLogin = curTime WHERE userID = user_ID;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --END PROCEDURE 6 update_last_login
 -----------------------------------------------------------------
@@ -477,7 +479,7 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN FUNCTION 4 SendMessageToGroup
 -----------------------------------------------------------------
-DROP PROCEDURE send_message_to_group;
+DROP PROCEDURE IF EXISTS send_message_to_group;
 CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
 AS $$
 DECLARE
@@ -588,7 +590,7 @@ $$ LANGUAGE plpgsql;
 --BEGIN FUNCTION 8 Return Ranked Groups
 -----------------------------------------------------------------
 
-DROP FUNCTION group_size_ranked();
+DROP FUNCTION IF EXISTS group_size_ranked();
 CREATE OR REPLACE FUNCTION group_size_ranked()
     RETURNS TABLE (group_id integer, total integer) AS $$
 BEGIN
