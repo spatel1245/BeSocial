@@ -2,11 +2,11 @@
 
 ## Welcome!
 
-### This is BeSocial, a Social Networking System for the University of Pittsburgh! 
+### This is BeSocial, a Social Networking System for the University of Pittsburgh!
  <br> 
 
- *Created by: Shiv Patel, Andres Trujillo, and Ben Zarom in April 2023*
- <br> <br>
+*Created by: Shiv Patel, Andres Trujillo, and Ben Zarom in April 2023*
+<br> <br>
 
 # HOW TO USE BeSocial:
 
@@ -19,9 +19,12 @@ OpenJDK Runtime Environment (Temurin)(build 1.8.0_352-b08)
 
 NOTE: WE HAVE ONLY MACs SO THAT IS WHAT WE TESTED ON
 
-Once you have all the necessary files in the same folder and have a command line open at that folder, you can do the following:
-1. Update password in BeSocial.java
-       You must open BeSocial.java and update your password in the openConnection() function below main. 
+Once you have all the necessary files in the same folder and have a command line open at that folder, 
+you can do the following:
+
+1. Update url,username, and password in BeSocial.java
+       You must open BeSocial.java and update your url, username, 
+       and password as necessary. They are hardcoded in the static members above main. 
        
 2. Compile:
 For Mac:
@@ -49,16 +52,17 @@ For Windows:
 ```
 
 ## Before you log in:
- 
+#### Note the details are under dropdown menus
+
 <details>
 <br>
 
 **Here's what you can do** *before* **you log into BeSocial:**
 <br>
 
- In the menu, you see 4 options. Here is each feature and how to use them:
- <br>
- 
+In the menu, you see 4 options. Here is each feature and how to use them:
+<br>
+
 
 **1. Create Profile**
 ```
@@ -90,14 +94,14 @@ Enter ‘4’ to exit the system and close the app
 
 <br>
 
-## After Logging in: 
+## After Logging in:
 
  <details>
 
- **Here's what you can do**  *after*  **you log into BeSocial:**
+**Here's what you can do**  *after*  **you log into BeSocial:**
 <br>
 
- In the menu, you see 20 options. Here is each feature and how to use them:
+In the menu, you see 20 options. Here is each feature and how to use them:
 
 
 **1. Create Profile**
@@ -219,26 +223,6 @@ Enter '20' to exit the system and close the app.
 -----------------
 <br>
 
-# BeSocial Client Application (Technical information)
-
-
-
-## Contains:
- ### Main Class.
- ### Main Method.
- ### All Required Methods. 
- ### Dashboard Class.
- ### Helper Classes for storing tuples in SQL. 
-
------------------
-
-### Initialization: BeSocial is initialized by setting the URL, user, and password as finals to the corresponding user and server. As well as temproarily sets the current user to null. 
-
-### Main Function 
-
-        The Main function consists of a while loop and switch statements that enable the user to select options indefinitely until they exit the program. 
-        
-----------
 
 ### Dashboard Methods
  <details>
@@ -301,7 +285,7 @@ Enter '20' to exit the system and close the app.
         Backend methods are static methods that belong to the BeSocial class. Specified in the project descriptions they include : 
 
 ------------------------------------------------------------------------------------
-        
+
 1. createUser:
 <details>
         Given a name, email address, password and date of birth, add a new user to the system by
@@ -550,38 +534,16 @@ user’s logout in the user’s “lastlogin” field of theuserrelation from th
 21. exit
 <details>
 This option should cleanly shut down and exit the program.
-
 </details>
 
-------------------------------------------------------------------------------------  
-
-       
-  
-
+------------------------------------------------------------------------------------
 </details>
-
-
-
 
 ------------------------------------------------------------------------------------  
 <br><br>
+# BeSocial Driver
+
+### Driver file runs through BeSocial Application Client demonstrating its wide variety of functionality with sample data, running it all automatically.
 
 
-# BeSocial Driver 
-
-### Driver file runs through BeSocial Application Client demonstrating its wide variety of functionality with sample data, running it all automatically. 
-
-<details>
- 
-<br>
- 
- **BEFORE YOU RUN THE Driver.java file:** Run the Schema.sql and Trigger.sql files before running the Driver file.
- 
-<br>
-
-## Expected Output
-<details>
-
-
-</details>
 <br>
