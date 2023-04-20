@@ -352,7 +352,7 @@ with new views, functions, procedures etc.
 
 ## Phase 2 The second phase should contain, in addition to the SQL part, the Java code. Specifically,
 
-- schema2.sql the script to create the enhanced database schema with integrity
+- schema2THISISWRONGONE.sql the script to create the enhanced database schema with integrity
     constraint evaluation modes.
 - trigger2.sql the script containing definitions of the triggers, and any stored
     procedures or functions that you designed
