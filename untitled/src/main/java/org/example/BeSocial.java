@@ -134,15 +134,21 @@ public class BeSocial{
 
         Connection conn = openConnection();
 
-        PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
-        preparedStatement.setString(1, name);
-        preparedStatement.setString(2, email);
-        preparedStatement.setString(3, password);
-        preparedStatement.setDate(4, Date.valueOf(DOB));
-        preparedStatement.executeUpdate();
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PROFILE values(default, ?, ?, ?, ?)");
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, email);
+            preparedStatement.setString(3, password);
+            preparedStatement.setDate(4, Date.valueOf(DOB));
+            preparedStatement.executeUpdate();
+            conn.close();
+            return 1;
+        }catch(SQLException e){
+            System.out.println("State: "+ e.getSQLState()+": Unique constraint violation error.");
+            conn.close();
+            return -1;
+        }
 
-        conn.close();
-        return 1;
     }
 
     /**
@@ -186,7 +192,10 @@ public class BeSocial{
      * @throws SQLException if an error occurs while executing the SQL statements
      */
     public static int login(String email, String password) throws SQLException{
-        if (currentAccount != null) return -1;
+        if (currentAccount != null){
+            System.out.printf("You are already logged in as %s.\n", currentAccount.getName());
+            return -1;
+        }
 
         Connection conn = openConnection();
 
@@ -208,8 +217,7 @@ public class BeSocial{
         }
 
         if(currentAccount!=null){
-            System.out.printf("The user was found. Name is %s, email is %s", currentAccount.getName(),
-                    currentAccount.getEmail());
+            System.out.printf("You have logged in as %s.", currentAccount.getName());
             return 1;
         }else{
             System.out.println("nothing matching was found");
@@ -227,7 +235,7 @@ public class BeSocial{
      * @param sendToUserID the user ID of the user to send a friend request to
      * @throws SQLException if an error occurs while accessing the database
      */
-    public static int initiateFriendship(int sendToUserID) throws SQLException{
+    public static int initiateFriendship(int sendToUserID, String message) throws SQLException{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
@@ -255,7 +263,7 @@ public class BeSocial{
                 }
             }
 
-            String message = Dashboard.initiateFriendshipMessage(name);
+            //String message = Dashboard.initiateFriendshipMessage(name);
 
             if(message!=null){
                 conn = openConnection();
@@ -266,7 +274,7 @@ public class BeSocial{
                 preparedStatement.setString(3, message);
                 preparedStatement.executeUpdate();
                 conn.close();
-                System.out.println("Your friend request was sent");
+                System.out.println("Your friend request was sent to UserID: "+ sendToUserID);
                 return 1;
             }
             System.out.println("Request not sent.");
@@ -287,28 +295,28 @@ public class BeSocial{
      *       0 if the user has no pending friend requests.
      * @throws SQLException if there is an error accessing the database
      */
-    public static int confirmFriendRequests() throws SQLException{
-        if(currentAccount==null) return -1;
+    public static int confirmFriendRequests(Integer[] toAdd) throws SQLException{
+//        if(currentAccount==null) return -1;
+//
+//        Connection conn = openConnection();
+//        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
+//        preparedStatement.setInt(1, currentAccount.getUserID());
+//        ResultSet response  = preparedStatement.executeQuery();
+//        conn.close();
+//
+//        List<FriendRequest> friendRequestList = new ArrayList<>();
+//        while(response.next()){
+//            FriendRequest friendRequest = new FriendRequest();
+//            friendRequest.setUserID1(response.getInt("userID1"));
+//            friendRequest.setUserID2(currentAccount.getUserID());
+//            friendRequest.setRequestText(response.getString("requestText"));
+//            friendRequestList.add(friendRequest);
+//        }
 
-        Connection conn = openConnection();
-        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
-        preparedStatement.setInt(1, currentAccount.getUserID());
-        ResultSet response  = preparedStatement.executeQuery();
-        conn.close();
+//        int responseCode = Dashboard.displayFriendRequests(friendRequestList);
+//        if(responseCode==-1) return -1;
 
-        List<FriendRequest> friendRequestList = new ArrayList<>();
-        while(response.next()){
-            FriendRequest friendRequest = new FriendRequest();
-            friendRequest.setUserID1(response.getInt("userID1"));
-            friendRequest.setUserID2(currentAccount.getUserID());
-            friendRequest.setRequestText(response.getString("requestText"));
-            friendRequestList.add(friendRequest);
-        }
-
-        int responseCode = Dashboard.displayFriendRequests(friendRequestList);
-        if(responseCode==-1) return -1;
-
-        Integer[] toAdd = Dashboard.getFriendsToAdd(friendRequestList);
+//        Integer[] toAdd = Dashboard.getFriendsToAdd(friendRequestList);
         if(toAdd.length==0){
             System.out.println("No new friends were add. Requests deleted!");
             return -1;
@@ -316,7 +324,7 @@ public class BeSocial{
             System.out.println("IDs that are being added: " + Arrays.toString(toAdd));
         }
 
-        conn = openConnection();
+        Connection conn = openConnection();
         CallableStatement callableStatement = conn.prepareCall("call add_select_friend_reqs(?,?)");
         callableStatement.setInt(1, currentAccount.getUserID());
         callableStatement.setArray(2, conn.createArrayOf("INTEGER", toAdd));
@@ -809,6 +817,39 @@ public class BeSocial{
         return null;
     }
 
+    public static String getName(int userID) throws SQLException{
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT name FROM PROFILE WHERE " +
+                "userID=?");
+        preparedStatement.setInt(1, userID);
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        String name;
+        if (response.next()) {
+            name = response.getString("name");
+            return name;
+        }
+        return null;
+    }
+    public static List<FriendRequest> generateFriendReqList() throws SQLException {
+        Connection conn = openConnection();
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT userID1, requestText FROM pendingFriend WHERE userID2=?");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        ResultSet response  = preparedStatement.executeQuery();
+        conn.close();
+
+        List<FriendRequest> friendRequestList = new ArrayList<>();
+        while(response.next()){
+            FriendRequest friendRequest = new FriendRequest();
+            friendRequest.setUserID1(response.getInt("userID1"));
+            friendRequest.setUserID2(currentAccount.getUserID());
+            friendRequest.setRequestText(response.getString("requestText"));
+            friendRequestList.add(friendRequest);
+        }
+        return friendRequestList;
+    }
+
 
     public static class Profile {
         private int userID;
@@ -1112,7 +1153,9 @@ public class BeSocial{
         //code for initiate friend request--------------------------------------------------------
         private static int startInitiateFriendship() throws SQLException {
             int toUserID = getUserID();
-            initiateFriendship(toUserID);
+            String name = getName(toUserID);
+            String message = initiateFriendshipMessage(name);
+            initiateFriendship(toUserID, message);
             return 1;
         }
         private static int getUserID(){
@@ -1125,7 +1168,7 @@ public class BeSocial{
             }
             return -1;
         }
-        private static String initiateFriendshipMessage(String name){
+        public static String initiateFriendshipMessage(String name){
             System.out.printf("You are sending a friend request to %s. Enter your message below.\n", name);
             System.out.print("Message: ");
             String message = scanner.nextLine();
@@ -1144,9 +1187,14 @@ public class BeSocial{
 
         //code for confirm friend request--------------------------------------------------------
         private static void startConfirmFriendRequest() throws SQLException {
-            confirmFriendRequests();
+            List<FriendRequest> frl = generateFriendReqList();
+            if (displayFriendRequests(frl)!=-1){
+                Integer[] toAdd = getFriendsToAdd(frl);
+                confirmFriendRequests(toAdd);
+            }
         }
         public static int displayFriendRequests(List<FriendRequest> response) {
+
             if(response.size()==0){
                 System.out.println("No Pending Friend Requests");
                 return -1;
@@ -1188,7 +1236,6 @@ public class BeSocial{
                             int requestNumber = Integer.parseInt(input);
                             if (requestNumber >= 1 && requestNumber <= MAX_NUM) {
                                 newList.add(friendRequestList.get(requestNumber-1).getUserID1());
-                                //toAdd[cur++]=friendRequestList.get(requestNumber-1).getUserID1(); //-1 since it will correspond to the index in caller
                                 System.out.printf("Added request %d, UserID: %d.\n", requestNumber, friendRequestList.get(requestNumber-1).getUserID1());
                             } else {
                                 System.out.printf("Request number must be between 1 and %d.%n", friendRequestList.size());
