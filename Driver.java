@@ -1,13 +1,12 @@
-package org.example;
-
 import java.sql.*;
-import java.util.HashMap;
+import java.sql.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-
 
 public class Driver{
     public static void main(String[] args) throws SQLException {
+        setup();
+        
         testLogin("admin@besocial.com", "admin");
         System.out.println("\n\n\n");
 
@@ -91,7 +90,10 @@ public class Driver{
         System.out.println("Now we can go and accept the group requests from ADMIN's profile, since it is the manager.");
         BeSocial.login("admin@besocial.com", "admin");
         System.out.println();
-        testConfirmGroupMembership(new HashMap<>(Map.of(1, List.of(4, 5))));
+
+        HashMap<Integer, List<Integer>> myMap = new HashMap<>();
+        myMap.put(1, Arrays.asList(4, 5));
+        testConfirmGroupMembership(myMap);
         System.out.println("We can check the pendinggroupmembers and see those entries gone...");
         displayPendingGroupMemberTable();
         System.out.println("...........................................................................................");
@@ -117,7 +119,10 @@ public class Driver{
 
         System.out.println("Now we can go and accept the new group requests from ADMIN's profile, since it is the manager");
         BeSocial.login("admin@besocial.com", "admin");
-        testConfirmGroupMembership(new HashMap<>(Map.of(2, List.of(6, 7))));
+
+        myMap.clear();
+        myMap.put(2, Arrays.asList(6, 7));
+        testConfirmGroupMembership(myMap);
         System.out.println("We can check the pendinggroupmembers and see those entries gone...\n");
         displayPendingGroupMemberTable();
         System.out.println("...........................................................................................");
@@ -206,6 +211,20 @@ public class Driver{
         System.out.println("That almost wraps up testing. Only thing left is exit. Here you go!");
         testExit();
 
+    }
+    public static void setup() throws SQLException{
+        Connection conn = BeSocial.openConnection();
+        Statement statement = conn.createStatement();
+
+        String deleteQuery = "DELETE FROM clock WHERE 1=1;";
+        statement.executeUpdate(deleteQuery);
+        String insertIntoClock = "INSERT INTO clock VALUES ('2021-01-01 00:00:00');";
+        statement.executeUpdate(insertIntoClock);
+        String insertIntoProfile = "INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');";
+        statement.executeUpdate(insertIntoProfile);
+        conn.close();
+
+        System.out.println("Assuming you ran schema2.sql and trigger2.sql already, the driver is setup!");
     }
     public static void testLogin(String email, String password) throws SQLException {
         System.out.println("We will first login as admin since only admin has permissions to add or drop profiles.");
