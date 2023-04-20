@@ -263,14 +263,14 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 --BEGIN PROCEDURE 3 createPendingGroupMembers
 -----------------------------------------------------------------
-
-CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
+DROP PROCEDURE IF EXISTS createPendingGroupMember();
+CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, _requestText varchar(200))
 AS $$
 DECLARE
     curTime timestamp;
 BEGIN
     SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
-    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requestText, curTime);
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, _requestText, curTime);
 END;
 $$ LANGUAGE plpgsql;
 
