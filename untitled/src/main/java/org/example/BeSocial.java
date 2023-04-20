@@ -610,6 +610,7 @@ public class BeSocial{
                 conn = openConnection();
                 CallableStatement callableStatement = conn.prepareCall("call send_message_to_group(?,?,?)");
                 callableStatement.setInt(1, currentAccount.getUserID());
+                System.out.println("setting groupID to: "+ gID);
                 callableStatement.setInt(2, gID);
                 callableStatement.setString(3, message);
                 callableStatement.executeUpdate();
@@ -1514,11 +1515,11 @@ public class BeSocial{
             sendMessageToGroup(getRecipGroupID());
         }
         private static int getRecipGroupID(){
-            System.out.print("Enter the GroupID of the group you would like send a message to.\nUserID: ");
+            System.out.print("Enter the GroupID of the group you would like send a message to.\nGroupID: ");
             String input = scanner.nextLine().trim();
             try {
-                int userID = Integer.parseInt(input);
-                return userID;
+                int groupID = Integer.parseInt(input);
+                return groupID;
             } catch (NumberFormatException e) {
                 System.out.println("Enter the GroupID of the group you would like send a message to.");
             }
