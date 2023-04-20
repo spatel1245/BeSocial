@@ -57,7 +57,7 @@ BEGIN
     BEGIN
         SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
         SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
-        FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid ORDER BY pendinggroupmember.requesttime ASC
+        FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid ORDER BY pendinggroupmember.requesttime
             LOOP
                 SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
 
@@ -155,7 +155,6 @@ AS $$
 BEGIN
 
     DECLARE
-        report  TEXT DEFAULT '';
         rec_deletedUsers RECORD;
         prof_count1 int;
         prof_count2 int;
@@ -210,21 +209,21 @@ EXECUTE FUNCTION removeDeletedUserMessages();
 --BEGIN PROCEDURE 1 createGROUP
 -----------------------------------------------------------------
 DROP PROCEDURE if EXISTS createGroup(name varchar(50), size int, description varchar(200), userid int);
-CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description varchar(200),userid int)
+CREATE OR REPLACE PROCEDURE createGroup (_name varchar(50),_size int,_description varchar(200),_userid int)
 AS $$
 DECLARE
     group_id integer;
     curTime timestamp;
 BEGIN
     SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
-    INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
+    INSERT INTO groupinfo VALUES (DEFAULT, _name, _size, _description);
     SELECT last_value(gid)
-           OVER (ORDER BY gid ASC
+           OVER (ORDER BY gid
                RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
     INTO group_id
     FROM groupinfo;
 
-    INSERT INTO groupmember VALUES (group_id, userid, 'manager', curTime);
+    INSERT INTO groupmember VALUES (group_id, _userid, 'manager', curTime);
 
 END;
 $$ LANGUAGE plpgsql;
@@ -264,13 +263,13 @@ $$ LANGUAGE plpgsql;
 --BEGIN PROCEDURE 3 createPendingGroupMembers
 -----------------------------------------------------------------
 
-CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
+CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, _requesttext varchar(200))
 AS $$
 DECLARE
     curTime timestamp;
 BEGIN
     SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
-    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, curTime);
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, _requesttext, curTime);
 END;
 $$ LANGUAGE plpgsql;
 
