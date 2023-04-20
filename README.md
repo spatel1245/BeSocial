@@ -33,7 +33,7 @@ For Windows:
      javac -cp "postgresql-42.6.0.jar;." BeSocial.java Driver.java
      
 3. Run SQL Files
-     run schema2THISISWRONGONE.sql
+     run schema2.sql
      run trigger2.sql
      * This will ensure the system is empty before starting... ESSENTIAL for driver*
      
