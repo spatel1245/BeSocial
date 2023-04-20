@@ -72,14 +72,14 @@ BEGIN
 
     DECLARE
         rec_updateGroup RECORD;
-        rec_groupSelected RECORD;
+
         sizelimit integer;
         curSize integer;
-
+        curTime timestamp;
     BEGIN
+        SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
         SELECT COUNT(gid) FROM groupinfo WHERE old.gid=groupinfo.gid INTO curSize;
-
-        FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid
+        FOR rec_updateGroup IN SELECT userId,gid FROM pendinggroupmember WHERE pendinggroupmember.gid=old.gid ORDER BY pendinggroupmember.requesttime ASC
             LOOP
                 SELECT size FROM groupinfo WHERE old.gid=groupinfo.gid INTO sizelimit;
 
@@ -236,8 +236,9 @@ CREATE OR REPLACE PROCEDURE createGroup (name varchar(50),size int,description v
 AS $$
 DECLARE
     group_id integer;
+    curTime timestamp;
 BEGIN
-
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
     INSERT INTO groupinfo VALUES (DEFAULT, name, size, description);
     SELECT last_value(gid)
            OVER (ORDER BY gid ASC
@@ -245,7 +246,7 @@ BEGIN
     INTO group_id
     FROM groupinfo;
 
-    INSERT INTO groupmember VALUES (group_id, userid, 'manager', now());
+    INSERT INTO groupmember VALUES (group_id, userid, 'manager', curTime);
 
 END;
 $$ LANGUAGE plpgsql;
@@ -263,9 +264,11 @@ CREATE OR REPLACE PROCEDURE add_select_friend_reqs(current_userID integer, userI
 AS $$
 DECLARE
     i integer;
+    curTime timestamp;
 BEGIN
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
     FOR i IN 1..array_length(userID_list, 1) LOOP
-            INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], NOW());
+            INSERT INTO friend (userID1, userID2, JDate) VALUES (current_userID, userID_list[i], curTime);
         END LOOP;
 
     DELETE FROM pendingfriend WHERE pendingfriend.userid2=current_userID;
@@ -286,8 +289,10 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE createPendingGroupMember(group_id integer,user_id integer, requestText varchar(200))
 AS $$
 DECLARE
+    curTime timestamp;
 BEGIN
-    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, now());
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, curTime);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -306,12 +311,14 @@ DECLARE
     i integer;
     curGroupSize integer;
     sizeLimit integer;
+    curtime timestamp;
 BEGIN
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
     SELECT COUNT(userID) FROM groupmember WHERE groupmember.gID=group_id INTO curGroupSize;
     SELECT size FROM groupinfo WHERE groupinfo.gID=group_id INTO sizelimit;
     FOR i IN 1..array_length(pendingMember_list, 1) LOOP
             if(curGroupSize<sizeLimit) then
-                INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',clock_timestamp());
+                INSERT INTO groupmember VALUES (group_id,pendingMember_list[i],'member',curtime);
                 SELECT COUNT(userID) FROM groupmember WHERE groupmember.gID=group_id INTO curGroupSize;
                 SELECT size FROM groupinfo WHERE groupinfo.gID=group_id INTO sizelimit;
             else
@@ -455,8 +462,11 @@ $$ LANGUAGE plpgsql;
 -----------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE send_message_to_friend(user_id INTEGER, friend_id INTEGER, message_body varchar(200))
 AS $$
+DECLARE
+    curTime timestamp;
 BEGIN
-    INSERT INTO message VALUES (default, user_id, message_body, friend_id, NULL, NOW()); -- will implicitly call add_message_recipient()
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
+    INSERT INTO message VALUES (default, user_id, message_body, friend_id, NULL, curTime); -- will implicitly call add_message_recipient()
 END;
 $$ LANGUAGE plpgsql;
 
@@ -472,9 +482,11 @@ CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTE
 AS $$
 DECLARE
     group_id integer;
+    curTime timestamp;
 BEGIN
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
     -- Insert the new message into the message table
-    INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
+    INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, curTime); -- will implicitly call add_message_recipient()
 END;
 $$ LANGUAGE plpgsql;
 
