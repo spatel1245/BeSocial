@@ -270,7 +270,7 @@ DECLARE
     curTime timestamp;
 BEGIN
     SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
-    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requesttext, curTime);
+    INSERT INTO pendinggroupmember VALUES (group_id,user_id, requestText, curTime);
 END;
 $$ LANGUAGE plpgsql;
 
