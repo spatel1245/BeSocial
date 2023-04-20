@@ -35,7 +35,6 @@ Enter ‘1’ to create a profile (ONLY A LOGGED IN ADMIN CAN DO THIS)
 
 **2. Drop Profile**
 ```
-
 Enter ‘2’ to REMOVE a profile (ONLY A LOGGED IN ADMIN CAN DO THIS)
 ```
 
@@ -188,7 +187,9 @@ Enter '20' to exit the system and close the app.
 -----------------
 <br>
 
-# BeSocial Client Application 
+# BeSocial Client Application (Technical information)
+
+
 
 ## Contains:
  ### Main Class.
@@ -203,7 +204,7 @@ Enter '20' to exit the system and close the app.
 
 ### Main Function 
 
-        The Main function consists of a while loop and switch statements that enable the user to select options indefinetly until they exit the program. 
+        The Main function consists of a while loop and switch statements that enable the user to select options indefinitely until they exit the program. 
         
 ----------
 
