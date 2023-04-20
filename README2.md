@@ -18,19 +18,21 @@ openjdk version "1.8.0_352"
 OpenJDK Runtime Environment (Temurin)(build 1.8.0_352-b08)
 
 Once you have all the necessary files in the same folder and have a command line open at that folder, you can do the following:
-
-1. Compile:
+1. Update password in BeSocial.java
+       You must open BeSocial.java and update your password in the openConnection() function below main. 
+       
+2. Compile:
 For Mac:
      javac -cp postgresql-42.6.0.jar BeSocial.java Driver.java
 For Windows:
      javac -cp "postgresql-42.6.0.jar;." BeSocial.java Driver.java
      
-2. Run SQL Files
+3. Run SQL Files
      run schema2.sql
      run trigger2.sql
      * This will ensure the system is empty before starting... ESSENTIAL for driver*
      
-3. Run:
+4. Run:
 For Mac:      
       java -cp postgresql-42.6.0.jar:. Driver
       or
