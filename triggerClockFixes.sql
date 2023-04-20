@@ -9,46 +9,53 @@ CREATE TRIGGER add_message_recipient
     FOR EACH ROW
 EXECUTE FUNCTION add_message_recipient();
 
--- CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
--- AS $$
--- DECLARE
---     group_id integer;
--- BEGIN
---     -- Insert the new message into the message table
---     INSERT INTO message VALUES (default, user_id, message_body, NULL, group_id, NOW()); -- will implicitly call add_message_recipient()
--- END;
--- $$ LANGUAGE plpgsql;
-
-
 CREATE OR REPLACE FUNCTION add_message_recipient()
     RETURNS TRIGGER
 AS $$
+DECLARE
+    _userid Integer;
 BEGIN
-    IF(NEW.toGroupID is null)
+    IF(NEW.touserid IS NOT NULL)
     THEN
-        INSERT INTO messageRecipient (msgID, userID) VALUES (NEW.msgID, NEW.touserid);
-        Return new;
+        INSERT INTO messagerecipient (msgID, userID) VALUES (NEW.msgID, NEW.touserid);
+        return new;
     ELSE
-
-        DECLARE
-            report  TEXT DEFAULT '';
-            rec_group RECORD;
-        BEGIN
-            FOR rec_group IN SELECT userId,gid FROM groupmember WHERE groupmember.gid=new.togroupid
-                LOOP
-
-                    if(new.togroupid=rec_group.gid)
-                    THEN
-                        INSERT INTO messageRecipient (msgID, userID) VALUES (new.msgid, rec_group.userID);
-                    end if;
-
-                end loop;
-
-            Return new;
-        end;--
+        FOR _userid IN (SELECT g.userid FROM groupmember g WHERE g.gid = NEW.toGroupId) LOOP
+                INSERT INTO messagerecipient (msgID, userID) VALUES (new.msgid, _userid);
+        END LOOP;
+        return new;
     END IF;
-END
+END;
 $$ LANGUAGE plpgsql;
+
+-- CREATE OR REPLACE FUNCTION add_message_recipient()
+--     RETURNS TRIGGER
+-- AS $$
+-- BEGIN
+--     IF(NEW.touserid IS NOT NULL)
+--     THEN
+--         INSERT INTO messagerecipient (msgID, userID) VALUES (NEW.msgID, NEW.touserid);
+--         return new;
+--     ELSE
+--         INSERT INTO messagerecipient (msgID, userID) VALUES (new.msgid, new.fromid);
+--         DECLARE
+--             rec_group RECORD;
+--         BEGIN
+--             FOR rec_group IN SELECT userId,gid FROM groupmember WHERE groupmember.gid=new.togroupid
+--                 LOOP
+--
+--                     if(new.togroupid=rec_group.gid)
+--                     THEN
+--                         INSERT INTO messageRecipient (msgID, userID) VALUES (new.msgid, rec_group.userid);
+--                     end if;
+--
+--                 end loop;
+--
+--             Return new;
+--         end;--
+--     END IF;
+-- END
+-- $$ LANGUAGE plpgsql;
 
 
 DROP TRIGGER if EXISTS add_message_recipient on message;
@@ -368,6 +375,7 @@ AS $$
 DECLARE
     curTime timestamp;
 BEGIN
+    SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
     UPDATE profile SET lastLogin = curTime WHERE userID = user_ID;
 END;
 $$ LANGUAGE plpgsql;
@@ -483,7 +491,6 @@ DROP PROCEDURE IF EXISTS send_message_to_group;
 CREATE OR REPLACE PROCEDURE send_message_to_group(user_id INTEGER, group_id INTEGER, message_body varchar(200))
 AS $$
 DECLARE
-    group_id integer;
     curTime timestamp;
 BEGIN
     SELECT INTO curTime pseudo_time FROM clock LIMIT 1;
@@ -720,6 +727,7 @@ $$ LANGUAGE plpgsql;
 -- -----------------------------------------------------------------
 --START FUNCTION 11 Rank Profile
 -----------------------------------------------------------------
+DROP FUNCTION IF EXISTS rank_profiles();
 CREATE OR REPLACE FUNCTION rank_profiles()
 RETURNS TABLE (
     userID INTEGER,
@@ -831,3 +839,58 @@ BEGIN
     LIMIT k;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- -----------------------------------------------------------------
+--START FUNCTION 15 BFS for threeDegrees
+-----------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS threeDegrees(loggedInUserID INTEGER, targetUserID INTEGER);
+CREATE OR REPLACE FUNCTION threeDegrees(
+    loggedInUserID INTEGER,
+    targetUserID INTEGER
+)
+    RETURNS INTEGER[] AS $$
+DECLARE
+    path INTEGER[] := ARRAY[loggedInUserID];
+    visited INTEGER[] := ARRAY[loggedInUserID];
+    distance INTEGER := 0;
+    nextVisited INTEGER[];
+    id INTEGER;
+    friendID INTEGER;
+    tempIDList INTEGER[];
+BEGIN
+    IF loggedInUserID = targetUserID THEN
+        RETURN path;
+    END IF;
+
+    WHILE distance < 3 AND path <> '{}' LOOP
+            nextVisited := '{}';
+            FOREACH id IN ARRAY visited LOOP
+                    tempIDList := array_agg(userID) FROM list_of_friend_IDs(id) WHERE userID IS NOT NULL;
+                    IF tempIDList<>'{}' THEN
+
+                    FOREACH friendID IN ARRAY tempIDList LOOP
+                            IF friendID = targetUserID THEN
+                                RETURN path || friendID;
+                            END IF;
+                            IF NOT friendID = ANY(visited) THEN
+                                nextVisited := nextVisited || friendID;
+                            END IF;
+                        END LOOP;
+                    END IF;
+                END LOOP;
+            distance := distance + 1;
+            IF array_length(nextVisited, 1) > 0 THEN
+                path := path || ARRAY[nextVisited[array_upper(nextVisited, 1)]];
+                visited := visited || ARRAY[nextVisited[array_upper(nextVisited, 1)]];
+            END IF;
+        END LOOP;
+
+    RETURN '{}';
+END;
+$$ LANGUAGE plpgsql;
+
+-- -----------------------------------------------------------------
+--END FUNCTION 15 BFS for threeDegrees
+-----------------------------------------------------------------

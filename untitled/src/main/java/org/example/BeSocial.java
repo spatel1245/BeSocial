@@ -115,7 +115,8 @@ public class BeSocial{
                         Dashboard.startTopMessages();
                         break;
                     case 18:
-                        System.out.println("You chose option 18: Three Degrees");
+                        Dashboard.startThreeDegrees();
+                        break;
                     case 19:
                         logout();
                         System.out.printf("\n\n\n\n\n\n\n\n");
@@ -371,6 +372,7 @@ public class BeSocial{
 
         return 1;
     }
+
     public static int createGroup(String groupName, String description, int membershipLimit) throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -386,6 +388,7 @@ public class BeSocial{
 
         return 1;
     }
+
     public static int initiateAddingGroup(int groupID, String requestText) throws SQLException{
         if(currentAccount==null) return -1;
 
@@ -414,6 +417,7 @@ public class BeSocial{
 
         return -1;
     }
+
     public static int confirmGroupMembership() throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -461,6 +465,7 @@ public class BeSocial{
         //TODO: handle "No groups are currently managed" should be displayed if the user is not a manager of any groups
         return 1;
     }
+
     public static int leaveGroup(int gID) throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -486,6 +491,7 @@ public class BeSocial{
         return -1;
 
     }
+
     public static int searchForProfile(String search) throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -604,6 +610,7 @@ public class BeSocial{
                 conn = openConnection();
                 CallableStatement callableStatement = conn.prepareCall("call send_message_to_group(?,?,?)");
                 callableStatement.setInt(1, currentAccount.getUserID());
+                System.out.println("setting groupID to: "+ gID);
                 callableStatement.setInt(2, gID);
                 callableStatement.setString(3, message);
                 callableStatement.executeUpdate();
@@ -703,6 +710,7 @@ public class BeSocial{
 
         return 1;
     }
+
     public static int rankGroups() throws SQLException {
         if(currentAccount==null) return -1;
 
@@ -760,30 +768,90 @@ public class BeSocial{
         Connection conn = openConnection();
         //TODO: Fill in the function name below
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM top_messages(?,?,?)");
-        preparedStatement.setInt(1,currentAccount.getUserID());
-        preparedStatement.setInt(2,numMonths);
-        preparedStatement.setInt(3,numUsers);
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, numMonths);
+        preparedStatement.setInt(3, numUsers);
         ResultSet rs = preparedStatement.executeQuery();
         conn.close();
 
         List<Profile> listOfProfiles = new ArrayList<>();
 
-        while(rs.next()){
-            Profile p = new Profile();
-            //TODO: You might have to replace the column names here
-            p.setUserID(rs.getInt("userID"));
-            p.setCountOfSomething(rs.getInt("numMessages"));
-            listOfProfiles.add(p);
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        System.out.println("Number of columns: " + columnCount);
+
+        for (int i = 1; i <= columnCount; i++) {
+            String columnName = metaData.getColumnName(i);
+            System.out.print(columnName + "\t");
+        }
+        System.out.println();
+
+        while (rs.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                String value = rs.getString(i);
+                System.out.print(value + "\t");
+            }
+            System.out.println();
         }
 
-        int result = Dashboard.displayListOfProfiles(listOfProfiles, "Number of Messages");
-        if(result == -1){
-            System.out.println("There are no profiles in the system.");
-        }
+//        while(rs.next()){
+//            Profile p = new Profile();
+//            //TODO: You might have to replace the column names here
+//            p.setUserID(rs.getInt("userID"));
+//            p.setCountOfSomething(rs.getInt("num_messages"));
+//            listOfProfiles.add(p);
+//        }
+//
+//        System.out.println("the size of the profilesList is: "+ listOfProfiles.size());
+
+//        int result = Dashboard.displayListOfProfiles(listOfProfiles, "Number of Messages");
+//        if(result == -1){
+//            System.out.println("There are no profiles in the system.");
+//        }
         return -1;
     }
 
-    public static int threeDegrees(){
+    public static int threeDegrees(int searchingForID) throws SQLException {
+        if(currentAccount==null) return -1;
+
+        Connection conn = openConnection();
+        //TODO: Fill in the function name below
+        PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM threeDegrees(?,?)");
+        preparedStatement.setInt(1, currentAccount.getUserID());
+        preparedStatement.setInt(2, searchingForID);
+        ResultSet rs = preparedStatement.executeQuery();
+        conn.close();
+
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        System.out.println("Number of columns: " + columnCount);
+
+        for (int i = 1; i <= columnCount; i++) {
+            String columnName = metaData.getColumnName(i);
+            System.out.print(columnName + "\t");
+        }
+        System.out.println();
+
+        while (rs.next()) {
+            Integer[] values = (Integer[]) rs.getArray(1).getArray();
+            for (int i = 0; i < values.length; i++) {
+                System.out.print(values[i] + "\t");
+            }
+            System.out.println();
+        }
+
+
+//        if (rs.next()) { // check if there is a result
+//            System.out.println("A PATH EXISTS");
+//            Integer[] path = (Integer[]) rs.getArray(1).getArray(); // retrieve the array from the ResultSet
+//            for (int i = 0; i < path.length; i++) {
+//                System.out.println(path[i]); // print each element of the array
+//            }
+//        } else {
+//            System.out.println("No path found"); // if there is no result
+//        }
+
         return -1;
     }
 
@@ -1447,11 +1515,11 @@ public class BeSocial{
             sendMessageToGroup(getRecipGroupID());
         }
         private static int getRecipGroupID(){
-            System.out.print("Enter the GroupID of the group you would like send a message to.\nUserID: ");
+            System.out.print("Enter the GroupID of the group you would like send a message to.\nGroupID: ");
             String input = scanner.nextLine().trim();
             try {
-                int userID = Integer.parseInt(input);
-                return userID;
+                int groupID = Integer.parseInt(input);
+                return groupID;
             } catch (NumberFormatException e) {
                 System.out.println("Enter the GroupID of the group you would like send a message to.");
             }
@@ -1684,26 +1752,27 @@ public class BeSocial{
             topMessages(inputResults.get(0), inputResults.get(1));
         }
         public static List<Integer> getInputTopMessages(){
-            List<Integer> toReturn = new ArrayList<>();
+            List<Integer> toReturn = new ArrayList<>(2);
 
             System.out.println("To see the top \'k\' users with respect to the number of messages sent in past" +
                     "\'x\' months. ");
             System.out.println("");
 
-            try{
-                System.out.print("k: ");
-                int k = Integer.parseInt(scanner.nextLine());
-                toReturn.add(0,k);
-            }catch(NumberFormatException e){
-                System.out.println("You must enter a number k that represents how many users you want to see");
-            }
 
             try{
                 System.out.print("x: ");
                 int x = Integer.parseInt(scanner.nextLine());
-                toReturn.add(1,x);
+                toReturn.add(x);
             }catch(NumberFormatException e){
                 System.out.println("You must enter a number x that represents over how many months");
+            }
+
+            try{
+                System.out.print("k: ");
+                int k = Integer.parseInt(scanner.nextLine());
+                toReturn.add(k);
+            }catch(NumberFormatException e){
+                System.out.println("You must enter a number k that represents how many users you want to see");
             }
 
             return toReturn;
@@ -1714,7 +1783,29 @@ public class BeSocial{
 
 
         //code for Three Degrees -------------------------------------------------
-        public static void startThreeDegrees() {
+        public static void startThreeDegrees() throws SQLException {
+            threeDegrees(getSearchForId());
+        }
+        public static int getSearchForId(){
+            System.out.println("Welcome to Three Degree!");
+            System.out.println("Find out if there is a connection between you and another user within three levels" +
+                    "between your mutual friends.");
+            System.out.println("Enter the User ID of the friend you want to search to or \"EXIT\" to return.");
+            System.out.println("User ID: ");
+            String input = scanner.nextLine();
+
+            if (input.equalsIgnoreCase("EXIT") || input.equalsIgnoreCase("E") ) {
+                return -1;
+            } else {
+                int searchingUserId = 0;
+                try {
+                    searchingUserId = Integer.parseInt(input);
+                    return searchingUserId;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a valid User ID or \"EXIT\" to return.");
+                }
+            }
+            return -1;
         }
         //end code for Three Degrees -------------------------------------------------
 

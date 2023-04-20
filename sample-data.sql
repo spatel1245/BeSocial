@@ -1,11 +1,12 @@
+INSERT INTO clock VALUES (default);
 INSERT INTO profile VALUES (default, 'admin', 'admin@besocial.com', 'admin', '1963-03-15', '2022-09-11T03:00:03');
 INSERT INTO profile VALUES (default, 'Lisa Robinson', 'lr@email.com', 'pass', '1988-09-09', '2022-06-16T16:51:28');
 INSERT INTO profile VALUES (default, 'Jessica Savage', 'js@email.com', 'pass', '1983-02-23', '2022-09-22T11:32:03');
 INSERT INTO profile VALUES (default, 'Jack Moore MD', 'jm@email.com', 'pass', '1962-06-04', '2022-06-15T22:44:41');
 INSERT INTO profile VALUES (default, 'Ryan Vargas', 'rv@email.com', 'pass', '1959-05-06', '2022-09-15T11:37:42');
+INSERT INTO profile VALUES (default, 'Carrie Shaw', 'cs@email.com', 'pass', '1926-11-03', '2022-12-19T00:10:32');
 
 
-INSERT INTO profile VALUES (6, 'Carrie Shaw', 'jodijohns@example.com', '!p5BtmJr', '1926-11-03', '2022-12-19T00:10:32');
 INSERT INTO profile VALUES (7, 'Michael Pittman', 'butlerjennifer@example.org', '(!3E8war', '2007-06-08', '2022-08-29T05:35:51');
 INSERT INTO profile VALUES (8, 'Felicia Ewing', 'megan43@example.net', ')I6FbWG4', '1978-09-16', '2022-06-26T00:26:20');
 INSERT INTO profile VALUES (9, 'Ryan Wood', 'christophergomez@example.org', '^1l0$Wzu', '1989-01-21', '2022-11-27T23:34:42');
