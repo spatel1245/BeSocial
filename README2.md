@@ -17,6 +17,8 @@ We did all development and testing on
 openjdk version "1.8.0_352"
 OpenJDK Runtime Environment (Temurin)(build 1.8.0_352-b08)
 
+NOTE: WE HAVE ONLY MACs SO THAT IS WHAT WE TESTED ON
+
 Once you have all the necessary files in the same folder and have a command line open at that folder, you can do the following:
 1. Update password in BeSocial.java
        You must open BeSocial.java and update your password in the openConnection() function below main. 
