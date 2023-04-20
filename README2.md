@@ -542,7 +542,7 @@ This option should cleanly shut down and exit the program.
  
 <br>
  
- **BEFORE YOU RUN THE driver.java file:** Run the Schema.sql and Trigger.sql files before running the Driver file.
+ **BEFORE YOU RUN THE Driver.java file:** Run the Schema.sql and Trigger.sql files before running the Driver file.
  
 <br>
 
