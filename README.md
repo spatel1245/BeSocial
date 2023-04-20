@@ -19,9 +19,12 @@ OpenJDK Runtime Environment (Temurin)(build 1.8.0_352-b08)
 
 NOTE: WE HAVE ONLY MACs SO THAT IS WHAT WE TESTED ON
 
-Once you have all the necessary files in the same folder and have a command line open at that folder, you can do the following:
-1. Update password in BeSocial.java
-       You must open BeSocial.java and update your password in the openConnection() function below main. 
+Once you have all the necessary files in the same folder and have a command line open at that folder, 
+you can do the following:
+
+1. Update url,username, and password in BeSocial.java
+       You must open BeSocial.java and update your url, username, 
+       and password as necessary. They are hardcoded in the static members above main. 
        
 2. Compile:
 For Mac:
@@ -49,6 +52,7 @@ For Windows:
 ```
 
 ## Before you log in:
+#### Note the details are under dropdown menus
  
 <details>
 <br>
@@ -219,26 +223,6 @@ Enter '20' to exit the system and close the app.
 -----------------
 <br>
 
-# BeSocial Client Application (Technical information)
-
-
-
-## Contains:
- ### Main Class.
- ### Main Method.
- ### All Required Methods. 
- ### Dashboard Class.
- ### Helper Classes for storing tuples in SQL. 
-
------------------
-
-### Initialization: BeSocial is initialized by setting the URL, user, and password as finals to the corresponding user and server. As well as temproarily sets the current user to null. 
-
-### Main Function 
-
-        The Main function consists of a while loop and switch statements that enable the user to select options indefinitely until they exit the program. 
-        
-----------
 
 ### Dashboard Methods
  <details>
@@ -553,35 +537,14 @@ This option should cleanly shut down and exit the program.
 
 </details>
 
-------------------------------------------------------------------------------------  
-
-       
-  
-
+------------------------------------------------------------------------------------
 </details>
-
-
-
 
 ------------------------------------------------------------------------------------  
 <br><br>
-
-
 # BeSocial Driver 
 
 ### Driver file runs through BeSocial Application Client demonstrating its wide variety of functionality with sample data, running it all automatically. 
 
-<details>
- 
-<br>
- 
- **BEFORE YOU RUN THE Driver.java file:** Run the Schema.sql and Trigger.sql files before running the Driver file.
- 
-<br>
 
-## Expected Output
-<details>
-
-
-</details>
 <br>
