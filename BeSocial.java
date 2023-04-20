@@ -24,7 +24,12 @@ public class BeSocial{
                 System.out.println("3. Login");
                 System.out.println("4. Exit");
                 System.out.print("Selecting option: ");
-                int choice = scanner.nextInt();
+                int choice = 0;
+                try {
+                    choice = scanner.nextInt();
+                } catch (InputMismatchException e) {
+                    scanner.next();
+                }
                 switch (choice) {
                     case 1:
                         Dashboard.startCreateProfile();
@@ -68,7 +73,12 @@ public class BeSocial{
                 System.out.println("19. Logout");
                 System.out.println("20. Exit");
                 System.out.print("Selecting option: ");
-                int choice = scanner.nextInt();
+                int choice = 0;
+                try {
+                    choice = scanner.nextInt();
+                } catch (InputMismatchException e) {
+                    scanner.next();
+                }
                 switch (choice) {
                     case 1:
                         Dashboard.startCreateProfile();
@@ -631,7 +641,6 @@ public class BeSocial{
         if(currentAccount==null) return -1;
 
         Connection conn = openConnection();
-        //TODO: Fill in the function name below
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM top_messages(?,?,?)");
         preparedStatement.setInt(1, currentAccount.getUserID());
         preparedStatement.setInt(2, numMonths);
@@ -639,23 +648,16 @@ public class BeSocial{
         ResultSet rs = preparedStatement.executeQuery();
         conn.close();
 
-        List<Profile> listOfProfiles = new ArrayList<>();
+        int numCols = rs.getMetaData().getColumnCount();
 
-        ResultSetMetaData metaData = rs.getMetaData();
-        int columnCount = metaData.getColumnCount();
-
-        System.out.println("Number of columns: " + columnCount);
-
-        for (int i = 1; i <= columnCount; i++) {
-            String columnName = metaData.getColumnName(i);
-            System.out.print(columnName + "\t");
+        for (int i = 1; i <= numCols; i++) {
+            System.out.print(rs.getMetaData().getColumnLabel(i) + "\t");
         }
         System.out.println();
 
         while (rs.next()) {
-            for (int i = 1; i <= columnCount; i++) {
-                String value = rs.getString(i);
-                System.out.print(value + "\t");
+            for (int i = 1; i <= numCols; i++) {
+                System.out.print(rs.getObject(i) + "\t");
             }
             System.out.println();
         }
@@ -789,7 +791,6 @@ public class BeSocial{
         }
         return null;
     }
-
     public static String checkGroupMemGetName(int gID) throws SQLException {
         Connection conn = openConnection();
         PreparedStatement preparedStatement = conn.prepareStatement("SELECT checkGroupMemberExists(?, ?)");
@@ -820,6 +821,15 @@ public class BeSocial{
             return null;
         }
     }
+    public static void updateClock(String time) throws SQLException {
+        Timestamp timestamp = Timestamp.valueOf(time);
+        Connection conn = BeSocial.openConnection();
+        PreparedStatement displayStatement = conn.prepareStatement("UPDATE CLOCK SET pseudo_time=?");
+        displayStatement.setTimestamp(1, timestamp);
+        displayStatement.executeUpdate();
+        conn.close();
+    }
+
 
     public static class Profile {
         private int userID;
@@ -1525,6 +1535,7 @@ public class BeSocial{
         //code for Display New Messages -------------------------------------------------
         public static void startDisplayNewMessages() throws SQLException {
             displayNewMessages();
+            waitForEnterToContinue();
         }
         //end code for Display New Messages -------------------------------------------------
 
@@ -1812,6 +1823,5 @@ public class BeSocial{
 
         }
         //end code for Three Degrees -------------------------------------------------
-
     }
 }

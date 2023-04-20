@@ -654,7 +654,7 @@ DROP FUNCTION IF EXISTS top_messages(integer, integer, integer);
 CREATE OR REPLACE FUNCTION top_messages(user_ID INTEGER, x INTEGER, k INTEGER)
 RETURNS TABLE (
     userID INTEGER,
-    num_messages INTEGER -- change the return type to BIGINT
+    num_messages INTEGER
 )
 AS $$
 DECLARE

@@ -208,6 +208,35 @@ public class Driver{
         System.out.println("\n...........................................................................................");
         System.out.println("\n\n\n");
 
+        System.out.println("We can now test the functions that use the clock");
+        System.out.println("Logged in as User 7, we will send a message to User 6. We will then\n" +
+                "increment the clock before logging out. This means that when User 6 logs in\n" +
+                "to check the new messages, it will be present.");
+        BeSocial.updateClock("2023-04-20 14:30:00");
+        testSendMessageToUser(6, "Message that will show as new");
+        BeSocial.logout();
+        BeSocial.login("jm@email.com", "pass");
+        System.out.println();
+        testDisplayNewMessages();
+        System.out.println("Since this user's last login was before the last message was sent, we see it here.");
+        BeSocial.updateClock("2023-04-20 14:30:00");
+        System.out.println("\nIf we log out and log back in, it will be gone.");
+        BeSocial.logout();
+        BeSocial.login("jm@email.com", "pass");
+        System.out.println("\n");
+        testDisplayNewMessages();
+        System.out.println("\n...........................................................................................");
+        System.out.println("\n\n\n");
+
+        System.out.println("To test top messages, I had the clock set two years in the past for all but the last message.\n" +
+                "Since we have already exhaustively tested sending messages, I'll send various messages to User 7 over one month\n" +
+                "and we can test top messages to User 7 on one month.");
+        loadMessagesToUser7();
+        testTopMessages(1,3);
+        System.out.println("\n...........................................................................................");
+        System.out.println("\n\n\n");
+
+
         System.out.println("That almost wraps up testing. Only thing left is exit. Here you go!");
         testExit();
 
@@ -374,7 +403,8 @@ public class Driver{
         BeSocial.displayMessages();
     }
 
-    private static void testDisplayNewMessages() {
+    private static void testDisplayNewMessages() throws SQLException {
+        BeSocial.displayNewMessages();
     }
 
     private static void testDisplayFriends(boolean flag, String[] inputs) throws SQLException {
@@ -389,8 +419,8 @@ public class Driver{
         BeSocial.rankProfiles();
     }
 
-    private static void testTopMessages() {
-
+    private static void testTopMessages(int numMonths, int numUsers) throws SQLException {
+        BeSocial.topMessages(numMonths,numUsers);
     }
 
     private static void testThreeDegrees(int userID) throws SQLException {
@@ -428,6 +458,40 @@ public class Driver{
         }
         System.out.println(".................................................................................................................................................");
     }
+    private static void loadMessagesToUser7() throws SQLException {
+
+//        INSERT INTO message VALUES (default, 1, 'Hello!', 7, null, '2023-04-10 12:30:00');
+//        INSERT INTO message VALUES (default, 1, 'How are you?', 7, null, '2023-04-09 15:45:00');
+//        INSERT INTO message VALUES (default, 5, 'What are you up to?', 7, null, '2023-04-08 18:20:00');
+//        INSERT INTO message VALUES (default, 6, 'Did you watch the game?', 7, null, '2023-04-07 09:00:00');
+//        INSERT INTO message VALUES (default, 6, 'I miss you!', 7, null, '2023-04-06 14:10:00');
+//        INSERT INTO message VALUES (default, 6, 'Lets hang out soon!', 7, null, '2023-04-05 11:20:00');
+
+
+//        Connection conn = BeSocial.openConnection();
+//        Statement statement = conn.createStatement();
+//        String inserts = ("INSERT INTO message VALUES (default, 1, 'Hello!', 7, null, '2023-04-10 12:30:00');\n" +
+//                "        INSERT INTO message VALUES (default, 1, 'How are you?', 7, null, '2023-04-09 15:45:00');\n" +
+//                "        INSERT INTO message VALUES (default, 5, 'What are you up to?', 7, null, '2023-04-08 18:20:00');\n" +
+//                "        INSERT INTO message VALUES (default, 6, 'Did you watch the game?', 7, null, '2023-04-07 09:00:00');\n" +
+//                "        INSERT INTO message VALUES (default, 6, 'I miss you!', 7, null, '2023-04-06 14:10:00');\n" +
+//                "        INSERT INTO message VALUES (default, 6, 'Lets hang out soon!', 7, null, '2023-04-05 11:20:00');");
+//
+//        Statement statement = conn.createStatement();
+//        statement.executeUpdate(inserts);
+
+        Connection conn = BeSocial.openConnection();
+        String inserts = ("INSERT INTO message VALUES (default, 1, 'Hello!', 7, null, '2023-04-10 12:30:00');\n" +
+                "        INSERT INTO message VALUES (default, 1, 'How are you?', 7, null, '2023-04-09 15:45:00');\n" +
+                "        INSERT INTO message VALUES (default, 5, 'What are you up to?', 7, null, '2023-04-08 18:20:00');\n" +
+                "        INSERT INTO message VALUES (default, 6, 'Did you watch the game?', 7, null, '2023-04-07 09:00:00');\n" +
+                "        INSERT INTO message VALUES (default, 6, 'I miss you!', 7, null, '2023-04-06 14:10:00');\n" +
+                "        INSERT INTO message VALUES (default, 6, 'Lets hang out soon!', 7, null, '2023-04-05 11:20:00');");
+
+        Statement statement = conn.createStatement();
+        statement.executeUpdate(inserts);
+        conn.close();
+        }
     private static void displayPendingFriendsTable() throws SQLException {
         Connection conn = BeSocial.openConnection();
         PreparedStatement displayStatement = conn.prepareStatement("SELECT * FROM pendingfriend");
@@ -538,6 +602,5 @@ public class Driver{
             int userID = resultSet.getInt("userID");
             System.out.printf("%-10d %-10d%n", msgID, userID);
         }
-
     }
 }
