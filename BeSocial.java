@@ -1071,7 +1071,7 @@ public class BeSocial{
             response.add(scanner.nextLine().trim());
             System.out.print("Password: ");
             response.add(scanner.nextLine().trim());
-            System.out.print("Date of Birth: ");
+            System.out.print("Date of Birth (YYYY-MM-DD): ");
             response.add(scanner.nextLine().trim());
             return response;
         }
