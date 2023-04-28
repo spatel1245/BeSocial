@@ -1059,7 +1059,7 @@ public class BeSocial{
             if(response == -1){
                 System.out.println("Profile creation failed... returning to menu!");
             }else{
-                System.out.println("The new profile has been created!);
+                System.out.println("The new profile has been created!");
             }
         }
         private static List<String> getProfileDetails(){
